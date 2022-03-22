@@ -58,8 +58,8 @@ port(
  video_g        : out std_logic_vector(3 downto 0);
  video_b        : out std_logic_vector(3 downto 0);
  video_i        : out std_logic_vector(3 downto 0);
- video_csync    : out std_logic;
- video_blankn   : out std_logic;
+ video_hblank   : out std_logic;
+ video_vblank   : out std_logic;
  video_hs       : out std_logic;
  video_vs       : out std_logic;
  
@@ -74,6 +74,7 @@ port(
  btn_coin      : in std_logic;
  btn_start_2   : in std_logic;
  btn_start_1   : in std_logic;
+
  btn_run_1     : in std_logic_vector(3 downto 0);
  btn_run_2     : in std_logic_vector(3 downto 0);
  btn_aim_1     : in std_logic_vector(3 downto 0);
@@ -136,9 +137,9 @@ architecture struct of williams2 is
  signal rom_prog1_do    : std_logic_vector( 7 downto 0);
  signal rom_prog2_do    : std_logic_vector( 7 downto 0);
 
- signal sram_cs        : std_logic;
- signal sram_we        : std_logic;
- signal sram_do        : std_logic_vector( 7 downto 0);
+ --signal sram_cs        : std_logic;
+ --signal sram_we        : std_logic;
+ --signal sram_do        : std_logic_vector( 7 downto 0);
 
  signal page    : std_logic_vector( 2 downto 0);
  signal page_cs : std_logic;
@@ -251,8 +252,8 @@ architecture struct of williams2 is
  signal cpu_ba      : std_logic;
  signal cpu_bs      : std_logic;
  
- signal gun_bin_code  : std_logic_vector(5 downto 0);
- signal gun_gray_code : std_logic_vector(5 downto 0);
+ --signal gun_bin_code  : std_logic_vector(5 downto 0);
+ --signal gun_gray_code : std_logic_vector(5 downto 0);
 
  signal sound_select : std_logic_vector(7 downto 0);
  signal sound_trig   : std_logic;
@@ -1045,7 +1046,9 @@ port map
 );
 
 -- video syncs and blanks
-video_csync <= csync;
+--video_csync <= csync;
+video_hblank <= hblank;
+video_vblank <= vblank;
 
 process(clock_12)
 	constant hcnt_base : integer := 52;
@@ -1058,17 +1061,18 @@ if rising_edge(clock_12) then
   elsif hcnt = hcnt_base+6 then hsync0 <= '1';
   end if;
 
-  if    hcnt = hcnt_base+0     then hsync1 <= '0';
-  elsif hcnt = hcnt_base+3     then hsync1 <= '1';
-  elsif hcnt = hcnt_base+32-64 then hsync1 <= '0';
-  elsif hcnt = hcnt_base+35-64 then hsync1 <= '1';
-  end if;
+--   Removed for MiSTer
+--  if    hcnt = hcnt_base+0     then hsync1 <= '0';
+--  elsif hcnt = hcnt_base+3     then hsync1 <= '1';
+--  elsif hcnt = hcnt_base+32-64 then hsync1 <= '0';
+--  elsif hcnt = hcnt_base+35-64 then hsync1 <= '1';
+--  end if;
 
-  if    hcnt = hcnt_base+0        then hsync2 <= '0';
-  elsif hcnt = hcnt_base+32-3-64  then hsync2 <= '1';
-  elsif hcnt = hcnt_base+32-64    then hsync2 <= '0';
-  elsif hcnt = hcnt_base+64-3-128 then hsync2 <= '1';
-  end if;
+--  if    hcnt = hcnt_base+0        then hsync2 <= '0';
+--  elsif hcnt = hcnt_base+32-3-64  then hsync2 <= '1';
+--    elsif hcnt = hcnt_base+32-64    then hsync2 <= '0';
+--    elsif hcnt = hcnt_base+64-3-128 then hsync2 <= '1';
+--    end if;
   
   if hcnt = 63 and pixel_cnt = 5 then
 	 if vcnt = 502 then
@@ -1078,17 +1082,18 @@ if rising_edge(clock_12) then
     end if;
   end if;	 
 
-  if    vsync_cnt = 0 then csync <= hsync1;
-  elsif vsync_cnt = 1 then csync <= hsync1;
-  elsif vsync_cnt = 2 then csync <= hsync1;
-  elsif vsync_cnt = 3 then csync <= hsync2;
-  elsif vsync_cnt = 4 then csync <= hsync2;
-  elsif vsync_cnt = 5 then csync <= hsync2;
-  elsif vsync_cnt = 6 then csync <= hsync1;
-  elsif vsync_cnt = 7 then csync <= hsync1;
-  elsif vsync_cnt = 8 then csync <= hsync1;
-  else                     csync <= hsync0;
-  end if;
+--   Removed for MiSTer
+--  if    vsync_cnt = 0 then csync <= hsync1;
+--  elsif vsync_cnt = 1 then csync <= hsync1;
+--  elsif vsync_cnt = 2 then csync <= hsync1;
+--  elsif vsync_cnt = 3 then csync <= hsync2;
+--  elsif vsync_cnt = 4 then csync <= hsync2;
+--  elsif vsync_cnt = 5 then csync <= hsync2;
+--  elsif vsync_cnt = 6 then csync <= hsync1;
+--  elsif vsync_cnt = 7 then csync <= hsync1;
+--  elsif vsync_cnt = 8 then csync <= hsync1;
+--  else                     csync <= hsync0;
+--  end if;
 
   if    hcnt = 48 and pixel_cnt = 3 then hblank <= '1'; 
   elsif hcnt =  1 and pixel_cnt = 3 then hblank <= '0';
@@ -1099,7 +1104,7 @@ if rising_edge(clock_12) then
   end if;
 
   -- external sync and blank outputs
-  video_blankn <= not (hblank or vblank);
+--  video_blankn <= not (hblank or vblank);
 
   video_hs <= hsync0;
   
