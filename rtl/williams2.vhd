@@ -137,9 +137,9 @@ architecture struct of williams2 is
  signal rom_prog1_do    : std_logic_vector( 7 downto 0);
  signal rom_prog2_do    : std_logic_vector( 7 downto 0);
 
- --signal sram_cs        : std_logic;
- --signal sram_we        : std_logic;
- --signal sram_do        : std_logic_vector( 7 downto 0);
+ signal sram_cs        : std_logic;
+ signal sram_we        : std_logic;
+ signal sram_do        : std_logic_vector( 7 downto 0);
 
  signal page    : std_logic_vector( 2 downto 0);
  signal page_cs : std_logic;
@@ -519,7 +519,7 @@ data_bus_high <=
 data_bus_low <=
 	palette_lo_do           when color_cs = '1' and addr_bus(0) = '0' else
 	palette_hi_do           when color_cs = '1' and addr_bus(0) = '1' else	
-	-- rom_do                  when rom_bank_cs = '1' else
+--	rom_do                  when rom_bank_cs = '1' else
 	rom_bank_a_do           when rom_bank_cs = '1' and (page = "010"                ) else
 	rom_bank_b_do           when rom_bank_cs = '1' and (page = "110"                ) else
 	rom_bank_c_do           when rom_bank_cs = '1' and (page = "001" or page = "011") else
