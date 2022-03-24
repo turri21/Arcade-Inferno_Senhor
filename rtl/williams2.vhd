@@ -261,6 +261,23 @@ architecture struct of williams2 is
  
  signal sound_cpu_addr : std_logic_vector(15 downto 0);
 
+
+
+-- logic to load roms from disk
+--	rom_P1_cs <= '1' when dn_addr(13 downto 11) = "000"  else '0';		-- 2048
+--	rom_P2_cs <= '1' when dn_addr(13 downto 11) = "001"  else '0';		-- 2048
+--	rom_N2_cs <= '1' when dn_addr(13 downto 11) = "010"  else '0';		-- 2048
+--	rom_M4_cs <= '1' when dn_addr(13 downto 11) = "011"  else '0';		-- 2048
+--	rom_D7_cs <= '1' when dn_addr(13 downto 9) = "10000"  else '0';		-- 512
+--	rom_E7_cs <= '1' when dn_addr(13 downto 9) = "10001"  else '0';		-- 512
+--	rom_D8_cs <= '1' when dn_addr(13 downto 9) = "10010"  else '0';		-- 512
+--	rom_E8_cs <= '1' when dn_addr(13 downto 9) = "10011"  else '0';		-- 512
+--	rom_E2_cs <= '1' when dn_addr(13 downto 8) = "101000"  else '0';		-- 256
+--	rom_E1_cs <= '1' when dn_addr(13 downto 8) = "101001"  else '0';		-- 256
+
+
+
+
 begin
 
 -- for debug
@@ -788,8 +805,9 @@ port map(
  clk  => clock_12,
  addr => addr_bus(12 downto 0),
  data => rom_prog2_do
-);
 
+-- rom_M4_cs=>rom_M4_cs
+);
 
 -- rom17.ic26 + rom15.ic24 
 --bank_a_rom : entity work.inferno_bank_a
@@ -805,6 +823,8 @@ port map(
  clk  => clock_12,
  addr => addr_bus(14 downto 0),
  data => rom_bank_b_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- rom11.ic18 + rom9.ic16 + rom7.ic14 + rom5.ic12 
@@ -813,6 +833,8 @@ port map(
  clk  => clock_12,
  addr => addr_bus(14 downto 0),
  data => rom_bank_c_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- rom10.ic17 + rom8.ic15 + rom6.ic13 + rom4.ic11
@@ -821,6 +843,8 @@ port map(
  clk  => clock_12,
  addr => addr_bus(14 downto 0),
  data => rom_bank_d_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- rom20.ic57
@@ -829,6 +853,8 @@ port map(
  clk  => clock_12,
  addr => graph_addr,
  data => graph1_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- rom20.ic58
@@ -837,6 +863,8 @@ port map(
  clk  => clock_12,
  addr => graph_addr,
  data => graph2_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- rom20.ic41
@@ -845,6 +873,8 @@ port map(
  clk  => clock_12,
  addr => graph_addr,
  data => graph3_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- cpu/video wram low 0 - IC102-105
@@ -856,6 +886,8 @@ port map(
  addr => vram_addr,
  d    => data_bus(3 downto 0),
  q    => vram_l0_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- cpu/video wram high 0 - IC98-101
@@ -867,6 +899,8 @@ port map(
  addr => vram_addr,
  d    => data_bus(7 downto 4),
  q    => vram_h0_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- cpu/video wram low 1 - IC110-113
@@ -878,6 +912,8 @@ port map(
  addr => vram_addr,
  d    => data_bus(3 downto 0),
  q    => vram_l1_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- cpu/video wram high 1 - IC106-109
@@ -889,6 +925,8 @@ port map(
  addr => vram_addr,
  d    => data_bus(7 downto 4),
  q    => vram_h1_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- cpu/video wram low 2 - IC118-121
@@ -900,6 +938,8 @@ port map(
  addr => vram_addr,
  d    => data_bus(3 downto 0),
  q    => vram_l2_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- cpu/video wram high 2 - IC115-117
@@ -911,6 +951,8 @@ port map(
  addr => vram_addr,
  d    => data_bus(7 downto 4),
  q    => vram_h2_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 
@@ -923,6 +965,8 @@ port map(
  addr => palette_addr,
  d    => data_bus,
  q    => palette_lo_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- palette rams - IC76-75
@@ -934,6 +978,8 @@ port map(
  addr => palette_addr,
  d    => data_bus,
  q    => palette_hi_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 
@@ -946,6 +992,8 @@ port map(
  addr => map_addr,
  d    => data_bus,
  q    => map_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- sram 0 & 1
@@ -957,6 +1005,8 @@ port map(
  addr => addr_bus(11 downto 0),
  d    => data_bus,
  q    => sram_do
+
+-- rom_M4_cs=>rom_M4_cs
 );
 
 -- cmos ram - IC59
@@ -968,6 +1018,8 @@ port map(
  addr => addr_bus(9 downto 0),
  d    => data_bus(3 downto 0),
  q    => cmos_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- addr bus to video addr decoder - IC60
@@ -976,6 +1028,8 @@ port map(
  clk  => clock_12,
  addr => decod_addr,
  data => decod_do
+
+-- rom_M4_cs=>rom_M4_cs 
 );
 
 -- gun gray code encoder

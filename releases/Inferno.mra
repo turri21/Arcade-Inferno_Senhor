@@ -18,7 +18,7 @@
     <about></about>
 
     <resolution>15kHz</resolution>
-    <rotation></rotation>
+    <rotation>horizontal</rotation>
     <flip></flip>
 
     <players>2</players>
@@ -40,7 +40,7 @@
 		<dip bits="13,15" name="Bonus Coins"    ids="None,3cr/2c,5cr/4c,6cr/4c,6cr/5c,4cr/3c"/>
 	</switches>
 
-	<rom index="0" md5="" type="merged|nonmerged" zip="inferno.zip">
+	<rom index="0" md5="none" type="merged|nonmerged" zip="inferno.zip">
         <!--
 		<part crc="41fc985e" name="6290-01.b1"></part>
 		<part crc="07f7a920" name="6291-01.c1"></part>
