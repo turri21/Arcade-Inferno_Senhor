@@ -83,7 +83,12 @@ port(
  sw_coktail_table : in std_logic;
  seven_seg : out std_logic_vector( 7 downto 0);
  
- dbg_out : out std_logic_vector(31 downto 0)
+ dbg_out : out std_logic_vector(31 downto 0);
+
+-- signals that carry the ROM data from the MiSTer disk
+ dn_addr        : in  std_logic_vector(15 downto 0);
+ dn_dout        : in  std_logic_vector(7 downto 0);
+ dn_wr          : in  std_logic
 
 );
 end williams2;
@@ -261,24 +266,27 @@ architecture struct of williams2 is
  
  signal sound_cpu_addr : std_logic_vector(15 downto 0);
 
-
-
 -- logic to load roms from disk
---	rom_P1_cs <= '1' when dn_addr(13 downto 11) = "000"  else '0';		-- 2048
---	rom_P2_cs <= '1' when dn_addr(13 downto 11) = "001"  else '0';		-- 2048
---	rom_N2_cs <= '1' when dn_addr(13 downto 11) = "010"  else '0';		-- 2048
---	rom_M4_cs <= '1' when dn_addr(13 downto 11) = "011"  else '0';		-- 2048
---	rom_D7_cs <= '1' when dn_addr(13 downto 9) = "10000"  else '0';		-- 512
---	rom_E7_cs <= '1' when dn_addr(13 downto 9) = "10001"  else '0';		-- 512
---	rom_D8_cs <= '1' when dn_addr(13 downto 9) = "10010"  else '0';		-- 512
---	rom_E8_cs <= '1' when dn_addr(13 downto 9) = "10011"  else '0';		-- 512
---	rom_E2_cs <= '1' when dn_addr(13 downto 8) = "101000"  else '0';		-- 256
---	rom_E1_cs <= '1' when dn_addr(13 downto 8) = "101001"  else '0';		-- 256
-
-
-
+signal rom_prog2_cs			: std_logic;
+signal rom_bank_b_cs  		: std_logic;
+signal rom_bank_c_cs   		: std_logic; 
+signal rom_bank_d_cs   		: std_logic;
+signal rom_sound_cs 		: std_logic;
+signal rom_graph1_cs  		: std_logic;
+signal rom_graph2_cs   		: std_logic;
+signal rom_graph3_cs   		: std_logic;
 
 begin
+
+--	rom_prog2_cs <= '1' when dn_addr(13 downto 11) = "000"  else '0';		-- 2048
+--	rom_bank_b_cs <= '1' when dn_addr(13 downto 11) = "001"  else '0';		-- 2048
+--	rom_bank_c_cs <= '1' when dn_addr(13 downto 11) = "010"  else '0';		-- 2048
+--	rom_bank_d_cs <= '1' when dn_addr(13 downto 11) = "011"  else '0';		-- 2048
+--	rom_sound_cs <= '1' when dn_addr(13 downto 9) = "10000"  else '0';		-- 512
+--	rom_graph1_cs <= '1' when dn_addr(13 downto 9) = "10001"  else '0';		-- 512
+--	rom_graph2_cs <= '1' when dn_addr(13 downto 9) = "10010"  else '0';		-- 512
+--	rom_graph3_cs <= '1' when dn_addr(13 downto 9) = "10011"  else '0';		-- 512
+
 
 -- for debug
 process (clock_12) 
@@ -806,7 +814,11 @@ port map(
  addr => addr_bus(12 downto 0),
  data => rom_prog2_do
 
--- rom_M4_cs=>rom_M4_cs
+ -- dn_wr => dn_wr,
+ -- dn_addr=>dn_addr,
+ -- dn_dout=>dn_dout,
+
+ -- rom_prog2_cs=>rom_prog2_cs
 );
 
 -- rom17.ic26 + rom15.ic24 
@@ -824,7 +836,11 @@ port map(
  addr => addr_bus(14 downto 0),
  data => rom_bank_b_do
 
--- rom_M4_cs=>rom_M4_cs 
+ -- dn_wr => dn_wr,
+ -- dn_addr=>dn_addr,
+ -- dn_dout=>dn_dout,
+
+-- rom_bank_b_cs=>rom_bank_b_cs 
 );
 
 -- rom11.ic18 + rom9.ic16 + rom7.ic14 + rom5.ic12 
@@ -834,7 +850,11 @@ port map(
  addr => addr_bus(14 downto 0),
  data => rom_bank_c_do
 
--- rom_M4_cs=>rom_M4_cs 
+ -- dn_wr => dn_wr,
+ -- dn_addr=>dn_addr,
+ -- dn_dout=>dn_dout,
+
+-- rom_bank_c_cs=>rom_bank_c_cs
 );
 
 -- rom10.ic17 + rom8.ic15 + rom6.ic13 + rom4.ic11
@@ -844,7 +864,11 @@ port map(
  addr => addr_bus(14 downto 0),
  data => rom_bank_d_do
 
--- rom_M4_cs=>rom_M4_cs 
+ -- dn_wr => dn_wr,
+ -- dn_addr=>dn_addr,
+ -- dn_dout=>dn_dout,
+
+-- rom_bank_d_cs=>rom_bank_d_cs
 );
 
 -- rom20.ic57
@@ -854,7 +878,11 @@ port map(
  addr => graph_addr,
  data => graph1_do
 
--- rom_M4_cs=>rom_M4_cs 
+ -- dn_wr => dn_wr,
+ -- dn_addr=>dn_addr,
+ -- dn_dout=>dn_dout,
+
+-- rom_graph1_cs=>rom_graph1_cs
 );
 
 -- rom20.ic58
@@ -864,7 +892,11 @@ port map(
  addr => graph_addr,
  data => graph2_do
 
--- rom_M4_cs=>rom_M4_cs 
+ -- dn_wr => dn_wr,
+ -- dn_addr=>dn_addr,
+ -- dn_dout=>dn_dout,
+
+-- rom_graph2_cs=>rom_graph2_cs
 );
 
 -- rom20.ic41
@@ -874,7 +906,11 @@ port map(
  addr => graph_addr,
  data => graph3_do
 
--- rom_M4_cs=>rom_M4_cs 
+ -- dn_wr => dn_wr,
+ -- dn_addr=>dn_addr,
+ -- dn_dout=>dn_dout,
+
+-- rom_graph3_cs=>rom_graph3_cs 
 );
 
 -- cpu/video wram low 0 - IC102-105
@@ -886,7 +922,6 @@ port map(
  addr => vram_addr,
  d    => data_bus(3 downto 0),
  q    => vram_l0_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -899,7 +934,6 @@ port map(
  addr => vram_addr,
  d    => data_bus(7 downto 4),
  q    => vram_h0_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -912,7 +946,6 @@ port map(
  addr => vram_addr,
  d    => data_bus(3 downto 0),
  q    => vram_l1_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -925,7 +958,6 @@ port map(
  addr => vram_addr,
  d    => data_bus(7 downto 4),
  q    => vram_h1_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -938,7 +970,6 @@ port map(
  addr => vram_addr,
  d    => data_bus(3 downto 0),
  q    => vram_l2_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -951,7 +982,6 @@ port map(
  addr => vram_addr,
  d    => data_bus(7 downto 4),
  q    => vram_h2_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -965,7 +995,6 @@ port map(
  addr => palette_addr,
  d    => data_bus,
  q    => palette_lo_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -978,7 +1007,6 @@ port map(
  addr => palette_addr,
  d    => data_bus,
  q    => palette_hi_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -992,7 +1020,6 @@ port map(
  addr => map_addr,
  d    => data_bus,
  q    => map_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -1005,7 +1032,6 @@ port map(
  addr => addr_bus(11 downto 0),
  d    => data_bus,
  q    => sram_do
-
 -- rom_M4_cs=>rom_M4_cs
 );
 
@@ -1018,7 +1044,6 @@ port map(
  addr => addr_bus(9 downto 0),
  d    => data_bus(3 downto 0),
  q    => cmos_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -1028,7 +1053,6 @@ port map(
  clk  => clock_12,
  addr => decod_addr,
  data => decod_do
-
 -- rom_M4_cs=>rom_M4_cs 
 );
 
@@ -1181,6 +1205,12 @@ port map(
  audio_out     => audio_out,
  
  dbg_cpu_addr  => sound_cpu_addr
+
+ -- dn_wr => dn_wr,
+ -- dn_addr=>dn_addr,
+ -- dn_dout=>dn_dout,
+
+ -- rom_sound_cs=>rom_sound_cs
 );
 
 end struct;

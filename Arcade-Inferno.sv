@@ -336,23 +336,21 @@ williams2 williams2
 	.btn_advance(),
 	.btn_high_score_reset(),
 
-	//.btn_gobble(m_gobble),
-	//.btn_grenade(m_grenade),
-
 	.btn_coin(m_coin),
 	.btn_start_1(m_start1),
 	.btn_start_2(m_start2),
 	.btn_trigger_1(m_trigger),
-
-	//.gun_h(),
-	//.gun_v(),
 
 	.cnt_4ms_o(),
 
 	.sw_coktail_table(),
 	.seven_seg(),
 
-	.dbg_out()
+	.dbg_out(),
+
+	.dn_addr(ioctl_addr[16:0]),
+	.dn_dout(ioctl_dout),
+	.dn_wr(ioctl_wr && ioctl_index==0)	
 );
 
 endmodule

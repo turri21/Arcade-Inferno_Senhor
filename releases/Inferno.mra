@@ -27,7 +27,7 @@
     <num_buttons></num_buttons>
     <button_names></button_names>
 
-<!-- DIPS to be changed later just copy pasted for now as a template -->
+    <!-- DIPS to be changed later just copy pasted for now as a template -->
     <switches page_id="1" page_name="Switches" base="8" default="00,02">
 		<dip bits="0,1"   name="Language"       ids="English,German,French,Spanish"/>
 		<dip bits="2,3"   name="Lives"          ids="2,3,4,5"/>
@@ -41,57 +41,54 @@
 	</switches>
 
 	<rom index="0" md5="none" type="merged|nonmerged" zip="inferno.zip">
-        <!--
-		<part crc="41fc985e" name="6290-01.b1"></part>
-		<part crc="07f7a920" name="6291-01.c1"></part>
-		<part crc="e9ff0124" name="6442-01.d1"></part>
-		<part crc="d6bb00d0" name="6443-01.e1"></part>
-		<part crc="801b42dd" name="6396-01.p4"></part>
-		<part crc="135ba1aa" name="6397-01.r4"></part>
-		<part crc="c9e1017e" name="6398-01.k6"></part>
-		<part crc="63d685b2" name="6399-01.j6"></part>
-		<part crc="b8094b4c" name="6400-01.m2"></part>
-		<part crc="857df8db" name="6401-01.e2"></part>
-        -->
 
-        <!-- ic9.inf  <part crc="1a013185" name=""></part> -->
-        <!-- ic10.inf <part crc="dbf64a36" name=""></part> -->
+        <!-- inferno_prog2 -->
+        <interleave output="16">        
+            <part crc="1a013185" name="ic9.inf"  map="01"/>
+            <part crc="dbf64a36" name="ic10.inf" map="10"/>
+        </interleave>
 
-        <!-- #inferno_bank_b.bin inferno_bank_b.vhd -->
-        <!-- ic25.inf <part crc="103a5951" name=""></part> -->
-        <!-- ic23.inf <part crc="c04749a0" name=""></part> -->
-        <!-- ic21.inf <part crc="c405f853" name=""></part> -->
-        <!-- ic19.inf <part crc="ade7645a" name=""></part> -->   
+        <!-- inferno_bank_b -->
+        <interleave output="32">  
+            <part crc="103a5951" name="ic25.inf" map="0001"/>
+            <part crc="c04749a0" name="ic23.inf" map="0010"/>
+            <part crc="c405f853" name="ic21.inf" map="0100"/>
+            <part crc="ade7645a" name="ic19.inf" map="1000"/>   
+        </interleave>
 
-        <!-- #inferno_bank_c.bin inferno_bank_c.vhd -->
-        <!-- ic18.inf <part crc="95bcf7b1" name=""></part> -->
-        <!-- ic16.inf <part crc="8bc4f935" name=""></part> -->
-        <!-- ic14.inf <part crc="a70508a7" name=""></part> -->
-        <!-- ic12.inf <part crc="7ffb87f9" name=""></part> -->
+        <!-- inferno_bank_c -->
+        <interleave output="32">  
+            <part crc="95bcf7b1" name="ic18.inf" map="0001"/>
+            <part crc="8bc4f935" name="ic16.inf" map="0010"/>
+            <part crc="a70508a7" name="ic14.inf" map="0100"/>
+            <part crc="7ffb87f9" name="ic12.inf" map="1000"/>
+        </interleave>
 
-        <!-- #inferno_bank_d.bin inferno_bank_d.vhd -->
-        <!-- ic17.inf <part crc="b4684139" name=""></part> -->
-        <!-- ic15.inf <part crc="128a6ad6" name=""></part> -->
-        <!-- ic13.inf <part crc="83a9e4d6" name=""></part> -->
-        <!-- ic11.inf <part crc="c2e9c909" name=""></part> -->
+        <!-- inferno_bank_d -->
+        <interleave output="32">  
+            <part crc="b4684139" name="ic17.inf"/>
+            <part crc="128a6ad6" name="ic15.inf"/>
+            <part crc="83a9e4d6" name="ic13.inf"/>
+            <part crc="c2e9c909" name="ic11.inf"/>
+        </interleave>
 
-        <!-- #inferno_sound.vhd -->
-        <!-- ic8.inf  <part crc="4e3123b8" name=""></part> -->
+        <!-- inferno_sound -->
+        <part crc="4e3123b8" name="ic8.inf"/>
 
-        <!-- #inferno_graph1.vhd -->
-        <!-- ic57.inf <part crc="65a4ef79" name=""></part> -->
+        <!-- inferno_graph1 -->
+        <part crc="65a4ef79" name="ic57.inf"/>
 
-        <!-- #inferno_graph2.vhd -->
-        <!-- ic58.inf <part crc="4bb1c2a0" name=""></part> -->
+        <!-- inferno_graph2 -->
+        <part crc="4bb1c2a0" name="ic58.inf"/>
 
-        <!-- #inferno_graph3.vhd -->
-        <!-- ic41.inf <part crc="f3f7238f" name=""></part> -->
+        <!-- inferno_graph3 -->
+        <part crc="f3f7238f" name="ic41.inf"/>
+	</rom>
 
-		</rom>
-    <rom index="1"></rom>        
-	<rom index="2"></rom>
-	<rom index="3"></rom>
-	<rom index="4"></rom>
+	<rom index="1"></rom> 
+    <rom index="2"></rom> 
+    <rom index="3"></rom>  
+    <rom index="4"></rom>  
 
 	<nvram></nvram>
 
