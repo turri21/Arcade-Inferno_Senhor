@@ -66,10 +66,10 @@
 
         <!-- inferno_bank_d -->
         <interleave output="32">  
-            <part crc="b4684139" name="ic17.inf"/>
-            <part crc="128a6ad6" name="ic15.inf"/>
-            <part crc="83a9e4d6" name="ic13.inf"/>
-            <part crc="c2e9c909" name="ic11.inf"/>
+            <part crc="b4684139" name="ic17.inf" map="0001"/>
+            <part crc="128a6ad6" name="ic15.inf" map="0010"/>
+            <part crc="83a9e4d6" name="ic13.inf" map="0100"/>
+            <part crc="c2e9c909" name="ic11.inf" map="1000"/>
         </interleave>
 
         <!-- inferno_sound -->
@@ -85,7 +85,11 @@
         <part crc="f3f7238f" name="ic41.inf"/>
 	</rom>
 
-	<rom index="1"></rom> 
+    <!-- inferno_prom3 -->
+	<rom index="1">
+        <part></part>
+    </rom> 
+
     <rom index="2"></rom> 
     <rom index="3"></rom>  
     <rom index="4"></rom>  

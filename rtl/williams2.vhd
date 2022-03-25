@@ -86,7 +86,7 @@ port(
  dbg_out : out std_logic_vector(31 downto 0);
 
 -- signals that carry the ROM data from the MiSTer disk
- dn_addr        : in  std_logic_vector(15 downto 0);
+ dn_addr        : in  std_logic_vector(23 downto 0);
  dn_dout        : in  std_logic_vector(7 downto 0);
  dn_wr          : in  std_logic
 
@@ -257,8 +257,6 @@ architecture struct of williams2 is
  signal cpu_ba      : std_logic;
  signal cpu_bs      : std_logic;
  
- --signal gun_bin_code  : std_logic_vector(5 downto 0);
- --signal gun_gray_code : std_logic_vector(5 downto 0);
 
  signal sound_select : std_logic_vector(7 downto 0);
  signal sound_trig   : std_logic;
@@ -267,7 +265,7 @@ architecture struct of williams2 is
  signal sound_cpu_addr : std_logic_vector(15 downto 0);
 
 -- logic to load roms from disk
-signal rom_prog2_cs			: std_logic;
+
 signal rom_bank_b_cs  		: std_logic;
 signal rom_bank_c_cs   		: std_logic; 
 signal rom_bank_d_cs   		: std_logic;
@@ -276,9 +274,17 @@ signal rom_graph1_cs  		: std_logic;
 signal rom_graph2_cs   		: std_logic;
 signal rom_graph3_cs   		: std_logic;
 
+signal rom_prog2_pt1   		: std_logic;
+signal rom_prog2_pt2   		: std_logic;
+
 begin
 
---	rom_prog2_cs <= '1' when dn_addr(13 downto 11) = "000"  else '0';		-- 2048
+rom_prog2_pt1 <= '1' when dn_addr(15 downto 12) = "0000" and dn_addr(23 downto 16) = "00000000" else '0';		-- 4096
+rom_prog2_pt2 <= '1' when dn_addr(15 downto 12) = "0001" and dn_addr(23 downto 16) = "00000000" else '0';		-- 4096
+
+rom_prog2_do <= dn_dout when rom_prog2_pt1 = '1' and rom_prog2_pt2 = '1';
+
+
 --	rom_bank_b_cs <= '1' when dn_addr(13 downto 11) = "001"  else '0';		-- 2048
 --	rom_bank_c_cs <= '1' when dn_addr(13 downto 11) = "010"  else '0';		-- 2048
 --	rom_bank_d_cs <= '1' when dn_addr(13 downto 11) = "011"  else '0';		-- 2048
@@ -532,7 +538,7 @@ rom_addr <= "00"&addr_bus(14 downto 0) when (page = "010"                ) else 
 
 -- mux data bus between cpu/blitter/roms/io/vram/sram
 data_bus_high <=
-	rom_prog2_do            when addr_bus(15 downto 12) >= X"E" else -- 8K -E000-FFFF
+	--rom_prog2_do            when addr_bus(15 downto 12) >= X"E" else -- 8K -E000-FFFF
 	sram_do                 when addr_bus(15 downto 12) >= X"D" else -- 4K- D000-DFFF
 	vcnt(7 downto 0)        when addr_bus(15 downto  4)  = X"CBE" else
 	map_do                  when addr_bus(15 downto 11)  = X"C"&'0' else
@@ -812,13 +818,12 @@ prog2_rom : entity work.inferno_prog2
 port map(
  clk  => clock_12,
  addr => addr_bus(12 downto 0),
+
+ dn_wr   => dn_wr,
+ dn_addr => dn_addr,
+ dn_dout => dn_dout,
+
  data => rom_prog2_do
-
- -- dn_wr => dn_wr,
- -- dn_addr=>dn_addr,
- -- dn_dout=>dn_dout,
-
- -- rom_prog2_cs=>rom_prog2_cs
 );
 
 -- rom17.ic26 + rom15.ic24 

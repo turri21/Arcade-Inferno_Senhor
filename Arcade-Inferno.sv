@@ -215,7 +215,7 @@ wire        direct_video;
 wire [21:0] gamma_bus;
 
 wire        ioctl_wr;
-wire [16:0] ioctl_addr;
+wire [23:0] ioctl_addr;
 wire  [7:0] ioctl_dout;
 wire  [7:0] ioctl_din;
 
@@ -390,7 +390,7 @@ williams2 williams2
 
 	.dbg_out(),
 
-	.dn_addr(ioctl_addr[16:0]),
+	.dn_addr(ioctl_addr[23:0]),
 	.dn_dout(ioctl_dout),
 	.dn_wr(ioctl_wr && ioctl_index==0)	
 );
