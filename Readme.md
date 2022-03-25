@@ -1,7 +1,7 @@
 # [Inferno] for [MiSTer](https://mister-devel.github.io/MkDocs_MiSTer/)
 
 Original core developed by [darfpga](https://github.com/darfpga)
-Ported to MiSTer by [birdybro](https://github.com/birdybro)
+Ported to MiSTer by [JasonA](https://github.com/JasonA-dev) and [birdybro](https://github.com/birdybro)
 
 ## Description
 
