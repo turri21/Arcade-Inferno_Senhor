@@ -265,7 +265,6 @@ architecture struct of williams2 is
  signal sound_cpu_addr : std_logic_vector(15 downto 0);
 
 -- logic to load roms from disk
-
 signal rom_bank_b_cs  		: std_logic;
 signal rom_bank_c_cs   		: std_logic; 
 signal rom_bank_d_cs   		: std_logic;
@@ -538,7 +537,7 @@ rom_addr <= "00"&addr_bus(14 downto 0) when (page = "010"                ) else 
 
 -- mux data bus between cpu/blitter/roms/io/vram/sram
 data_bus_high <=
-	--rom_prog2_do            when addr_bus(15 downto 12) >= X"E" else -- 8K -E000-FFFF
+	rom_prog2_do            when addr_bus(15 downto 12) >= X"E" else -- 8K -E000-FFFF
 	sram_do                 when addr_bus(15 downto 12) >= X"D" else -- 4K- D000-DFFF
 	vcnt(7 downto 0)        when addr_bus(15 downto  4)  = X"CBE" else
 	map_do                  when addr_bus(15 downto 11)  = X"C"&'0' else
@@ -821,9 +820,9 @@ port map(
 
  dn_wr   => dn_wr,
  dn_addr => dn_addr,
- dn_dout => dn_dout,
+ dn_dout => rom_prog2_do
 
- data => rom_prog2_do
+ --data => rom_prog2_do
 );
 
 -- rom17.ic26 + rom15.ic24 

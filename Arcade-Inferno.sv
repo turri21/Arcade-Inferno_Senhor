@@ -390,7 +390,7 @@ williams2 williams2
 
 	.dbg_out(),
 
-	.dn_addr(ioctl_addr[23:0]),
+	.dn_addr(ioctl_addr),
 	.dn_dout(ioctl_dout),
 	.dn_wr(ioctl_wr && ioctl_index==0)	
 );

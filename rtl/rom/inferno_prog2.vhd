@@ -21,7 +21,7 @@ begin
 process(clk)
 begin
 	if rising_edge(clk) then
-		data <= dn_dout;
+		data <= dn_dout; --(to_integer(unsigned(addr)));
 		--data <= rom_data(to_integer(unsigned(addr)));
 	end if;
 end process;
