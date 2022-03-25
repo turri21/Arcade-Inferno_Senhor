@@ -202,15 +202,17 @@ localparam CONF_STR = {
 	"A.INFERNO;;",
 	"-;",
 	"O89,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
 	"R0,Reset;",
 	"J1,Fire,Start 1P,Start 2P,Coin,Pause;",
-	"jn,A,B,X,Start,Select,R,L;",
+	"jn,A,Start,Select,R,L;",
 	"V,v",`BUILD_DATE 
 };
 
 wire        forced_scandoubler;
 wire        direct_video;
+wire [21:0] gamma_bus;
 
 wire        ioctl_wr;
 wire [16:0] ioctl_addr;
@@ -221,19 +223,26 @@ wire  [1:0] buttons;
 wire [31:0] status;
 wire [10:0] ps2_key;
 
-wire [15:0] joystick_0;
-wire [15:0] joy = joystick_0;
+wire [31:0] joy1, joy2;
+wire [31:0] joy = joy1 | joy2;
 
-wire [21:0] gamma_bus;
+wire [15:0] joyL1a, joyL2a;
+wire [15:0] joyLa = j2l ? joyL2a : joyL1a;
+
+wire [15:0] joyR1a, joyR2a;
+wire [15:0] joyRa = j2r ? joyR2a : joyR1a;
+
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
 	.clk_sys(clk_sys),
 	.HPS_BUS(HPS_BUS),
+	.EXT_BUS(),
 
 	.buttons(buttons),
 	.status(status),
-	.status_menumask(direct_video),
+	.status_menumask({direct_video}),
+
 	.forced_scandoubler(forced_scandoubler),
 	.gamma_bus(gamma_bus),
 	.direct_video(direct_video),
@@ -243,7 +252,14 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.ioctl_dout(ioctl_dout),
 	.ioctl_din(ioctl_din),
 
-	.joystick_0(joystick_0)
+	.joystick_0(joy1),
+	.joystick_1(joy2),
+
+	.joystick_l_analog_0(joyL1a),
+	.joystick_l_analog_1(joyL2a),
+
+	.joystick_r_analog_0(joyR1a),
+	.joystick_r_analog_1(joyR2a)
 );
 
 ///////////////////////   CLOCKS   ///////////////////////////////
@@ -267,20 +283,39 @@ wire reset = RESET | status[0] | buttons[1];
 
 //////////////////////////////////////////////////////////////////
 
-wire m_up      = joy[3];
-wire m_down    = joy[2];
-wire m_left    = joy[1];
-wire m_right   = joy[0];
+wire m_start1    = joy[5];
+wire m_start2    = joy[6];
+wire m_coin      = joy[7];
+wire m_pause     = joy[8];
 
-//wire m_gobble  = joy[6];
-//wire m_grenade = joy[5];
+wire m_up1       = joy1[3];
+wire m_down1     = joy1[2];
+wire m_left1     = joy1[1];
+wire m_right1    = joy1[0];
+wire m_trigger_1 = joy1[4];
 
-wire m_start1  = joy[7];
-wire m_start2  = joy[8];
-wire m_coin    = joy[9];
-wire m_trigger = joy[4];
-wire m_pause   = joy[10];
+wire m_up2       = joy2[3];
+wire m_down2     = joy2[2];
+wire m_left2     = joy2[1];
+wire m_right2    = joy2[0];
+wire m_trigger_2 = joy2[4];
 
+// need to add logic for left and right analog joystick handling here later
+
+reg j2l = 0;
+always @(posedge clk_sys) begin
+	if(joy2) j2l <= 1;
+	if(joy1) j2l <= 0;
+end
+
+reg j2r = 0;
+always @(posedge clk_sys) begin
+	if(joy2) j2r <= 1;
+	if(joy1) j2r <= 0;
+end
+
+
+// DISPLAY
 wire hblank, vblank;
 wire hs, vs;
 wire [3:0] r,g,b;
@@ -292,19 +327,19 @@ always @(posedge clk_48) begin
 	ce_pix <= !div;
 end
 
-arcade_video #(256,12) arcade_video
+arcade_video #(256,12,1) arcade_video
 (
-        .*,
+	.*,
 
-        .clk_video(clk_48),
+	.clk_video(clk_48),
 
-        .RGB_in({r,g,b}),
-        .HBlank(hblank),
-        .VBlank(vblank),
-        .HSync(~hs),
-        .VSync(~vs),
+	.RGB_in({r,g,b}),
+	.HBlank(hblank),
+	.VBlank(vblank),
+	.HSync(~hs),
+	.VSync(~vs),
 
-        .fx(status[5:3])
+	.fx(status[5:3])
 );
 
 wire [7:0] audio;
@@ -332,22 +367,23 @@ williams2 williams2
 
 	.audio_out(audio), // [7:0]
 
+	// see Robotron_MiSTer for example of what these do
 	.btn_auto_up(),
 	.btn_advance(),
 	.btn_high_score_reset(),
 
-	//.btn_gobble(m_gobble),
-	//.btn_grenade(m_grenade),
-
+	.btn_trigger_1(m_trigger_1),
+	.btn_trigger_2(m_trigger_2),
 	.btn_coin(m_coin),
 	.btn_start_1(m_start1),
 	.btn_start_2(m_start2),
-	.btn_trigger_1(m_trigger),
-
-	//.gun_h(),
-	//.gun_v(),
-
-	.cnt_4ms_o(),
+	
+	// see doc/joysticks_pic.png for reasoning
+	// Right Analog stick + R trigger for aim+fire maybe? Needs UX thoughts.
+	.btn_run_1(joyL1a), // Left Joystick P1 or Left Analog Joystick P1
+	.btn_run_2(joyL2a), // Left Joystick P2 or Left Analog Joystick P2
+	.btn_aim_1(joyR1a), // Right Joystick P1 or Right Analog Joystick P1
+	.btn_aim_2(joyR2a), // Right Joystick P2 or Right Analog Joystick P2
 
 	.sw_coktail_table(),
 	.seven_seg(),
