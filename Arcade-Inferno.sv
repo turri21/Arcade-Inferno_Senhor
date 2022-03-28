@@ -192,6 +192,8 @@ assign BUTTONS = 0;
 
 //////////////////////////////////////////////////////////////////
 
+assign LED_USER  = ioctl_download;
+
 wire [1:0] ar = status[9:8];
 
 assign VIDEO_ARX = (!ar) ? 12'd4 : (ar - 1'd1);
@@ -201,11 +203,11 @@ assign VIDEO_ARY = (!ar) ? 12'd3 : 12'd0;
 localparam CONF_STR = {
 	"A.INFERNO;;",
 	"-;",
-	"O89,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+	"H0O89,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
 	"R0,Reset;",
-	"J1,Fire,Start 1P,Start 2P,Coin,Pause;",
+	"J1,Flap,Start 1P,Start 2P,Coin,Pause;",
 	"jn,A,Start,Select,R,L;",
 	"V,v",`BUILD_DATE 
 };
@@ -213,25 +215,20 @@ localparam CONF_STR = {
 wire        forced_scandoubler;
 wire        direct_video;
 wire [21:0] gamma_bus;
+wire        video_rotated;
 
+wire        ioctl_download;
 wire        ioctl_wr;
-wire [23:0] ioctl_addr;
-wire  [7:0] ioctl_dout;
-wire  [7:0] ioctl_din;
+wire [24:0] ioctl_addr;
+wire [ 7:0] ioctl_dout;
+wire [15:0] ioctl_index;
 
 wire  [1:0] buttons;
 wire [31:0] status;
 wire [10:0] ps2_key;
 
-wire [31:0] joy1, joy2;
-wire [31:0] joy = joy1 | joy2;
-
-wire [15:0] joyL1a, joyL2a;
-wire [15:0] joyLa = j2l ? joyL2a : joyL1a;
-
-wire [15:0] joyR1a, joyR2a;
-wire [15:0] joyRa = j2r ? joyR2a : joyR1a;
-
+wire [15:0] joy1, joy2;
+wire [15:0] joy = joy1 | joy2;
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
@@ -244,22 +241,19 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.status_menumask({direct_video}),
 
 	.forced_scandoubler(forced_scandoubler),
+	.video_rotated(video_rotated),
 	.gamma_bus(gamma_bus),
 	.direct_video(direct_video),
 
+	.ioctl_download(ioctl_download),
 	.ioctl_wr(ioctl_wr),
 	.ioctl_addr(ioctl_addr),
 	.ioctl_dout(ioctl_dout),
-	.ioctl_din(ioctl_din),
+	.ioctl_index(ioctl_index),
 
 	.joystick_0(joy1),
-	.joystick_1(joy2),
+	.joystick_1(joy2)
 
-	.joystick_l_analog_0(joyL1a),
-	.joystick_l_analog_1(joyL2a),
-
-	.joystick_r_analog_0(joyR1a),
-	.joystick_r_analog_1(joyR2a)
 );
 
 ///////////////////////   CLOCKS   ///////////////////////////////
@@ -390,9 +384,9 @@ williams2 williams2
 
 	.dbg_out(),
 
-	.dn_addr(ioctl_addr),
-	.dn_dout(ioctl_dout),
-	.dn_wr(ioctl_wr && ioctl_index==0)	
+	.dn_addr(ioctl_addr[17:0]),
+	.dn_data(ioctl_dout),
+	.dn_wr(ioctl_wr && ioctl_index==0)
 );
 
 endmodule

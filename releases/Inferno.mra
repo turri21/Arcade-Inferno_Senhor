@@ -7,7 +7,7 @@
     <alternative></alternative>
     <platform></platform>
     <series></series>
-    <year></year>
+    <year>1984</year>
     <manufacturer>Williams</manufacturer>
     <category></category>
 
@@ -27,50 +27,10 @@
     <num_buttons></num_buttons>
     <button_names></button_names>
 
-    <!-- DIPS to be changed later just copy pasted for now as a template -->
-    <switches page_id="1" page_name="Switches" base="8" default="00,02">
-		<dip bits="0,1"   name="Language"       ids="English,German,French,Spanish"/>
-		<dip bits="2,3"   name="Lives"          ids="2,3,4,5"/>
-		<dip bits="4,5"   name="Bonus Life"     ids="10000,12000,15000,20000"/>
-		<dip bits="6"     name="Difficulty"     ids="Hard,Easy"/>
-		<dip bits="7"     name="Credit minimum" ids="1,2"/>
-
-		<dip bits="8,9"   name="Coinage"        ids="Free Play,1C_2C,1C_1C,2C_1C"/>
-		<dip bits="10,12" name="Game Time"      ids="Untimed,1 min,2 min,3 min,4 min,5 min,6 min,7 min"/>
-		<dip bits="13,15" name="Bonus Coins"    ids="None,3cr/2c,5cr/4c,6cr/4c,6cr/5c,4cr/3c"/>
-	</switches>
-
 	<rom index="0" md5="none" type="merged|nonmerged" zip="inferno.zip">
 
-        <!-- inferno_prog2 -->
-        <interleave output="16">        
-            <part crc="1a013185" name="ic9.inf"  map="01"/>
-            <part crc="dbf64a36" name="ic10.inf" map="10"/>
-        </interleave>
-
-        <!-- inferno_bank_b -->
-        <interleave output="32">  
-            <part crc="103a5951" name="ic25.inf" map="0001"/>
-            <part crc="c04749a0" name="ic23.inf" map="0010"/>
-            <part crc="c405f853" name="ic21.inf" map="0100"/>
-            <part crc="ade7645a" name="ic19.inf" map="1000"/>   
-        </interleave>
-
-        <!-- inferno_bank_c -->
-        <interleave output="32">  
-            <part crc="95bcf7b1" name="ic18.inf" map="0001"/>
-            <part crc="8bc4f935" name="ic16.inf" map="0010"/>
-            <part crc="a70508a7" name="ic14.inf" map="0100"/>
-            <part crc="7ffb87f9" name="ic12.inf" map="1000"/>
-        </interleave>
-
-        <!-- inferno_bank_d -->
-        <interleave output="32">  
-            <part crc="b4684139" name="ic17.inf" map="0001"/>
-            <part crc="128a6ad6" name="ic15.inf" map="0010"/>
-            <part crc="83a9e4d6" name="ic13.inf" map="0100"/>
-            <part crc="c2e9c909" name="ic11.inf" map="1000"/>
-        </interleave>
+        <!-- inferno_graph3 -->
+        <part crc="f3f7238f" name="ic41.inf"/>
 
         <!-- inferno_sound -->
         <part crc="4e3123b8" name="ic8.inf"/>
@@ -81,22 +41,31 @@
         <!-- inferno_graph2 -->
         <part crc="4bb1c2a0" name="ic58.inf"/>
 
-        <!-- inferno_graph3 -->
-        <part crc="f3f7238f" name="ic41.inf"/>
+        <!-- inferno_bank_b -->
+        <part crc="103a5951" name="ic25.inf" />
+        <part crc="c04749a0" name="ic23.inf" />
+        <part crc="c405f853" name="ic21.inf" />
+        <part crc="ade7645a" name="ic19.inf" />   
+
+        <!-- inferno_bank_c -->
+        <part crc="95bcf7b1" name="ic18.inf" />
+        <part crc="8bc4f935" name="ic16.inf" />
+        <part crc="a70508a7" name="ic14.inf" />
+        <part crc="7ffb87f9" name="ic12.inf" />
+
+        <!-- inferno_bank_d -->
+        <interleave output="32">  
+        <part crc="b4684139" name="ic17.inf" />
+        <part crc="128a6ad6" name="ic15.inf" />
+        <part crc="83a9e4d6" name="ic13.inf" />
+        <part crc="c2e9c909" name="ic11.inf" />
+
+        <!-- inferno_prog2 -->
+        <part crc="1a013185" name="ic9.inf"  />
+        <part crc="dbf64a36" name="ic10.inf" />
+
+        <!-- inferno_decoder -->
+
 	</rom>
 
-    <!-- inferno_prom3 -->
-	<rom index="1">
-        <part></part>
-    </rom> 
-
-    <rom index="2"></rom> 
-    <rom index="3"></rom>  
-    <rom index="4"></rom>  
-
-	<nvram></nvram>
-
-	<remark></remark>
-
-	<mratimestamp></mratimestamp>
 </misterromdescription>

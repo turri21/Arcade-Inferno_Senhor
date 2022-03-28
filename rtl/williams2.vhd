@@ -85,11 +85,10 @@ port(
  
  dbg_out : out std_logic_vector(31 downto 0);
 
--- signals that carry the ROM data from the MiSTer disk
- dn_addr        : in  std_logic_vector(23 downto 0);
- dn_dout        : in  std_logic_vector(7 downto 0);
- dn_wr          : in  std_logic
-
+-- MiSTer rom loading
+dn_addr              : in  std_logic_vector(17 downto 0);
+dn_data              : in  std_logic_vector( 7 downto 0);
+dn_wr                : in  std_logic
 );
 end williams2;
 
@@ -272,26 +271,9 @@ signal rom_sound_cs 		: std_logic;
 signal rom_graph1_cs  		: std_logic;
 signal rom_graph2_cs   		: std_logic;
 signal rom_graph3_cs   		: std_logic;
-
-signal rom_prog2_pt1   		: std_logic;
-signal rom_prog2_pt2   		: std_logic;
+signal rom_prog2_cs   		: std_logic;
 
 begin
-
-rom_prog2_pt1 <= '1' when dn_addr(15 downto 12) = "0000" and dn_addr(23 downto 16) = "00000000" else '0';		-- 4096
-rom_prog2_pt2 <= '1' when dn_addr(15 downto 12) = "0001" and dn_addr(23 downto 16) = "00000000" else '0';		-- 4096
-
-rom_prog2_do <= dn_dout when rom_prog2_pt1 = '1' and rom_prog2_pt2 = '1';
-
-
---	rom_bank_b_cs <= '1' when dn_addr(13 downto 11) = "001"  else '0';		-- 2048
---	rom_bank_c_cs <= '1' when dn_addr(13 downto 11) = "010"  else '0';		-- 2048
---	rom_bank_d_cs <= '1' when dn_addr(13 downto 11) = "011"  else '0';		-- 2048
---	rom_sound_cs <= '1' when dn_addr(13 downto 9) = "10000"  else '0';		-- 512
---	rom_graph1_cs <= '1' when dn_addr(13 downto 9) = "10001"  else '0';		-- 512
---	rom_graph2_cs <= '1' when dn_addr(13 downto 9) = "10010"  else '0';		-- 512
---	rom_graph3_cs <= '1' when dn_addr(13 downto 9) = "10011"  else '0';		-- 512
-
 
 -- for debug
 process (clock_12) 
@@ -813,16 +795,18 @@ port map(
 -- data => rom_prog1_do
 --);
 
+rom_prog2_cs <= '1' when dn_addr(17 downto 13) = "10001"  else '0';
+--prog2_rom : entity work.dpram generic map (8,13)
 prog2_rom : entity work.inferno_prog2
 port map(
- clk  => clock_12,
- addr => addr_bus(12 downto 0),
+	--clk_b  => clock_12,
+	--we_b   => dn_wr and rom_prog2_cs,
+	--addr_b => dn_addr(12 downto 0),
+	--d_b    => dn_data,
 
- dn_wr   => dn_wr,
- dn_addr => dn_addr,
- dn_dout => rom_prog2_do
-
- --data => rom_prog2_do
+	clk  => clock_12,
+	addr => addr_bus(12 downto 0),
+	data => rom_prog2_do
 );
 
 -- rom17.ic26 + rom15.ic24 
@@ -833,18 +817,26 @@ port map(
 -- data => rom_bank_a_do
 --);
 
+
+--rom_bank_b_cs <= '1' when dn_addr(17 downto 16) = "00"  else '0';
 -- rom16.ic25 + rom14.ic23 + rom13.ic21 + rom12.ic19 
+--bank_b_rom : entity work.dpram generic map (8,15)
+--port map(
+--	clk_b  => clock_12,
+--	we_b   => dn_wr and rom_bank_b_cs,
+--	addr_b => dn_addr(14 downto 0),
+--	d_b    => dn_data,
+
+--	clk_a  => clock_12,
+--	addr_a => addr_bus(14 downto 0),
+--	d_a    => rom_bank_b_do
+--);
 bank_b_rom : entity work.inferno_bank_b
 port map(
  clk  => clock_12,
  addr => addr_bus(14 downto 0),
  data => rom_bank_b_do
 
- -- dn_wr => dn_wr,
- -- dn_addr=>dn_addr,
- -- dn_dout=>dn_dout,
-
--- rom_bank_b_cs=>rom_bank_b_cs 
 );
 
 -- rom11.ic18 + rom9.ic16 + rom7.ic14 + rom5.ic12 
@@ -875,46 +867,47 @@ port map(
 -- rom_bank_d_cs=>rom_bank_d_cs
 );
 
+rom_graph1_cs <= '1' when dn_addr(16 downto 13) = "0010"  else '0';
+graph1_rom : entity work.dpram generic map (8,13)
 -- rom20.ic57
-graph1_rom : entity work.inferno_graph1
 port map(
- clk  => clock_12,
- addr => graph_addr,
- data => graph1_do
+	clk_b  => clock_12,
+	we_b   => dn_wr and rom_graph1_cs,
+	addr_b => dn_addr(12 downto 0),
+	d_b    => dn_data,
 
- -- dn_wr => dn_wr,
- -- dn_addr=>dn_addr,
- -- dn_dout=>dn_dout,
-
--- rom_graph1_cs=>rom_graph1_cs
+	clk_a  => clock_12,
+	addr_a => addr_bus(12 downto 0),
+	d_a    => graph1_do
 );
 
+rom_graph2_cs <= '1' when dn_addr(16 downto 13) = "0011"  else '0';
+graph2_rom : entity work.dpram generic map (8,13)
 -- rom20.ic58
-graph2_rom : entity work.inferno_graph2
 port map(
- clk  => clock_12,
- addr => graph_addr,
- data => graph2_do
+	clk_b  => clock_12,
+	we_b   => dn_wr and rom_graph2_cs,
+	addr_b => dn_addr(12 downto 0),
+	d_b    => dn_data,
 
- -- dn_wr => dn_wr,
- -- dn_addr=>dn_addr,
- -- dn_dout=>dn_dout,
-
--- rom_graph2_cs=>rom_graph2_cs
+	clk_a  => clock_12,
+	addr_a => addr_bus(12 downto 0),
+	d_a    => graph2_do
 );
 
+
+rom_graph3_cs <= '1' when dn_addr(16 downto 13) = "0000"  else '0';
+graph3_rom : entity work.dpram generic map (8,13)
 -- rom20.ic41
-graph3_rom : entity work.inferno_graph3
 port map(
- clk  => clock_12,
- addr => graph_addr,
- data => graph3_do
+	clk_b  => clock_12,
+	we_b   => dn_wr and rom_graph3_cs,
+	addr_b => dn_addr(12 downto 0),
+	d_b    => dn_data,
 
- -- dn_wr => dn_wr,
- -- dn_addr=>dn_addr,
- -- dn_dout=>dn_dout,
-
--- rom_graph3_cs=>rom_graph3_cs 
+	clk_a  => clock_12,
+	addr_a => addr_bus(12 downto 0),
+	d_a    => graph3_do
 );
 
 -- cpu/video wram low 0 - IC102-105
@@ -1203,18 +1196,16 @@ port map(
  clock_12   => clock_12,
  reset      => reset,
  
+ dn_addr      => dn_addr,
+ dn_data      => dn_data,
+ dn_wr        => dn_wr,
+
  sound_select  => sound_select,
  sound_trig    => sound_trig, 
  sound_ack     => sound_ack,
  audio_out     => audio_out,
  
  dbg_cpu_addr  => sound_cpu_addr
-
- -- dn_wr => dn_wr,
- -- dn_addr=>dn_addr,
- -- dn_dout=>dn_dout,
-
- -- rom_sound_cs=>rom_sound_cs
 );
 
 end struct;

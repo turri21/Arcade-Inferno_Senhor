@@ -31,15 +31,20 @@ use ieee.numeric_std.all;
 
 entity inferno_sound_board is
 port(
- clock_12    : in std_logic;
- reset       : in std_logic;
+	clock_12    : in std_logic;
+	reset       : in std_logic;
  
- sound_select : in std_logic_vector(7 downto 0);
- sound_trig   : in std_logic;
- sound_ack    : out std_logic;
- audio_out    : out std_logic_vector( 7 downto 0);
+	-- MiSTer rom loading
+	dn_addr      : in  std_logic_vector(17 downto 0);
+	dn_data      : in  std_logic_vector( 7 downto 0);
+	dn_wr        : in  std_logic;
+
+	sound_select : in std_logic_vector(7 downto 0);
+	sound_trig   : in std_logic;
+	sound_ack    : out std_logic;
+	audio_out    : out std_logic_vector( 7 downto 0);
  
- dbg_cpu_addr : out std_logic_vector(15 downto 0)
+	dbg_cpu_addr : out std_logic_vector(15 downto 0)
 );
 end inferno_sound_board;
 
@@ -81,6 +86,8 @@ architecture struct of inferno_sound_board is
  signal pia_irqb   : std_logic;
  signal pia_do     : std_logic_vector( 7 downto 0);
 
+ signal rom_sound_cs  : std_logic;
+ 
 begin
 
 dbg_cpu_addr <= cpu_addr;
@@ -146,11 +153,18 @@ port map(
 );
 
 -- cpu program rom
-cpu_prog_rom : entity work.inferno_sound
-port map(
- clk  => clock_12,
- addr => cpu_addr(12 downto 0),
- data => rom_do
+rom_sound_cs <= '1' when dn_addr(17 downto 13) = "0001" else '0';
+cpu_prog_rom : work.dpram generic map (8,13)
+port map
+(
+	clk_a  => clock_12,
+	we_a   => dn_wr and rom_sound_cs,
+	addr_a => dn_addr(12 downto 0),
+	d_a    => dn_data,
+	
+	clk_b  => clock_12,
+	addr_b => cpu_addr(12 downto 0),
+	q_b    => rom_do
 );
 
 -- cpu wram 
