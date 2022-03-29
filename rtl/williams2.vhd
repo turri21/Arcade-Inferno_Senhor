@@ -795,7 +795,7 @@ port map(
 -- data => rom_prog1_do
 --);
 
-rom_prog2_cs <= '1' when dn_addr(17 downto 13) = "10001"  else '0';
+rom_prog2_cs <= '1' when dn_addr(17 downto 14) = "1000"  else '0';
 --prog2_rom : entity work.dpram generic map (8,13)
 prog2_rom : entity work.inferno_prog2
 port map(
@@ -818,26 +818,20 @@ port map(
 --);
 
 
---rom_bank_b_cs <= '1' when dn_addr(17 downto 16) = "00"  else '0';
+rom_bank_b_cs <= '1' when dn_addr(17 downto 15) = "001"  else '0';
 -- rom16.ic25 + rom14.ic23 + rom13.ic21 + rom12.ic19 
---bank_b_rom : entity work.dpram generic map (8,15)
---port map(
---	clk_b  => clock_12,
---	we_b   => dn_wr and rom_bank_b_cs,
---	addr_b => dn_addr(14 downto 0),
---	d_b    => dn_data,
-
---	clk_a  => clock_12,
---	addr_a => addr_bus(14 downto 0),
---	d_a    => rom_bank_b_do
---);
-bank_b_rom : entity work.inferno_bank_b
+bank_b_rom : entity work.dpram generic map (8,15)
 port map(
- clk  => clock_12,
- addr => addr_bus(14 downto 0),
- data => rom_bank_b_do
+	clk_a  => clock_12,
+	we_a   => dn_wr and rom_bank_b_cs,
+	addr_a => dn_addr(14 downto 0),
+	d_a    => dn_data,
 
+	clk_b  => clock_12,
+	addr_b => addr_bus(14 downto 0),
+	q_b    => rom_bank_b_do
 );
+
 
 -- rom11.ic18 + rom9.ic16 + rom7.ic14 + rom5.ic12 
 bank_c_rom : entity work.inferno_bank_c
@@ -871,28 +865,28 @@ rom_graph1_cs <= '1' when dn_addr(16 downto 13) = "0010"  else '0';
 graph1_rom : entity work.dpram generic map (8,13)
 -- rom20.ic57
 port map(
-	clk_b  => clock_12,
-	we_b   => dn_wr and rom_graph1_cs,
-	addr_b => dn_addr(12 downto 0),
-	d_b    => dn_data,
-
 	clk_a  => clock_12,
-	addr_a => addr_bus(12 downto 0),
-	d_a    => graph1_do
+	we_a   => dn_wr and rom_graph1_cs,
+	addr_a => dn_addr(12 downto 0),
+	d_a    => dn_data,
+
+	clk_b  => clock_12,
+	addr_b => graph_addr,
+	q_b    => graph1_do
 );
 
 rom_graph2_cs <= '1' when dn_addr(16 downto 13) = "0011"  else '0';
 graph2_rom : entity work.dpram generic map (8,13)
 -- rom20.ic58
 port map(
-	clk_b  => clock_12,
-	we_b   => dn_wr and rom_graph2_cs,
-	addr_b => dn_addr(12 downto 0),
-	d_b    => dn_data,
-
 	clk_a  => clock_12,
-	addr_a => addr_bus(12 downto 0),
-	d_a    => graph2_do
+	we_a   => dn_wr and rom_graph2_cs,
+	addr_a => dn_addr(12 downto 0),
+	d_a    => dn_data,
+
+	clk_b  => clock_12,
+	addr_b => graph_addr,
+	q_b    => graph2_do
 );
 
 
@@ -900,14 +894,14 @@ rom_graph3_cs <= '1' when dn_addr(16 downto 13) = "0000"  else '0';
 graph3_rom : entity work.dpram generic map (8,13)
 -- rom20.ic41
 port map(
-	clk_b  => clock_12,
-	we_b   => dn_wr and rom_graph3_cs,
-	addr_b => dn_addr(12 downto 0),
-	d_b    => dn_data,
-
 	clk_a  => clock_12,
-	addr_a => addr_bus(12 downto 0),
-	d_a    => graph3_do
+	we_a   => dn_wr and rom_graph3_cs,
+	addr_a => dn_addr(12 downto 0),
+	d_a    => dn_data,
+
+	clk_b  => clock_12,
+	addr_b => graph_addr,
+	q_b    => graph3_do
 );
 
 -- cpu/video wram low 0 - IC102-105
