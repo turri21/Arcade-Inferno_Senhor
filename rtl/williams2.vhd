@@ -36,7 +36,7 @@
 --  Load sdram with external rom bank -sdram_loader_de10_lite.sof-
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
--- see inferno settings whithin inferno_cmos_ram.vhd
+-- see inferno settings within inferno_cmos_ram.vhd
 ---------------------------------------------------------------------------------
 
 library ieee;
@@ -46,222 +46,221 @@ use ieee.numeric_std.all;
 
 entity williams2 is
 port(
- clock_12     : in std_logic;
- reset        : in std_logic;
+	clock_12     : in std_logic;
+	reset        : in std_logic;
  
- rom_addr     : out std_logic_vector(16 downto 0);
- rom_do       : in  std_logic_vector( 7 downto 0);
- rom_rd       : out std_logic;
+	rom_addr     : out std_logic_vector(16 downto 0);
+	rom_do       : in  std_logic_vector( 7 downto 0);
+	rom_rd       : out std_logic;
  
 -- tv15Khz_mode : in std_logic;
- video_r        : out std_logic_vector(3 downto 0);
- video_g        : out std_logic_vector(3 downto 0);
- video_b        : out std_logic_vector(3 downto 0);
- video_i        : out std_logic_vector(3 downto 0);
- video_hblank   : out std_logic;
- video_vblank   : out std_logic;
- video_hs       : out std_logic;
- video_vs       : out std_logic;
+	video_r        : out std_logic_vector(3 downto 0);
+	video_g        : out std_logic_vector(3 downto 0);
+	video_b        : out std_logic_vector(3 downto 0);
+	video_i        : out std_logic_vector(3 downto 0);
+	video_hblank   : out std_logic;
+	video_vblank   : out std_logic;
+	video_hs       : out std_logic;
+	video_vs       : out std_logic;
  
- audio_out      : out std_logic_vector(7 downto 0);
+	audio_out      : out std_logic_vector(7 downto 0);
  
- btn_auto_up          : in std_logic;
- btn_advance          : in std_logic; 
- btn_high_score_reset : in std_logic;
+	btn_auto_up          : in std_logic;
+	btn_advance          : in std_logic; 
+	btn_high_score_reset : in std_logic;
 
- btn_trigger_1 : in std_logic;
- btn_trigger_2 : in std_logic;
- btn_coin      : in std_logic;
- btn_start_2   : in std_logic;
- btn_start_1   : in std_logic;
+	btn_trigger_1 : in std_logic;
+	btn_trigger_2 : in std_logic;
+	btn_coin      : in std_logic;
+	btn_start_2   : in std_logic;
+	btn_start_1   : in std_logic;
 
- btn_run_1     : in std_logic_vector(3 downto 0);
- btn_run_2     : in std_logic_vector(3 downto 0);
- btn_aim_1     : in std_logic_vector(3 downto 0);
- btn_aim_2     : in std_logic_vector(3 downto 0);
+	btn_run_1     : in std_logic_vector(3 downto 0);
+	btn_run_2     : in std_logic_vector(3 downto 0);
+	btn_aim_1     : in std_logic_vector(3 downto 0);
+	btn_aim_2     : in std_logic_vector(3 downto 0);
  
- sw_coktail_table : in std_logic;
- seven_seg : out std_logic_vector( 7 downto 0);
+	sw_coktail_table : in std_logic;
+	seven_seg : out std_logic_vector( 7 downto 0);
  
- dbg_out : out std_logic_vector(31 downto 0);
+	dbg_out : out std_logic_vector(31 downto 0);
 
 -- MiSTer rom loading
-dn_addr              : in  std_logic_vector(17 downto 0);
-dn_data              : in  std_logic_vector( 7 downto 0);
-dn_wr                : in  std_logic
+	dn_addr              : in  std_logic_vector(17 downto 0);
+	dn_data              : in  std_logic_vector( 7 downto 0);
+	dn_wr                : in  std_logic
 );
 end williams2;
 
 architecture struct of williams2 is
 
- signal en_pixel     : std_logic := '0'; 
- signal video_access : std_logic;
- signal graph_access : std_logic;
+signal en_pixel     : std_logic := '0'; 
+signal video_access : std_logic;
+signal graph_access : std_logic;
 
- signal color_cs     : std_logic;
- signal rom_bank_cs  : std_logic;
+signal color_cs     : std_logic;
+signal rom_bank_cs  : std_logic;
  
- signal en_cpu     : std_logic := '0';
- signal cpu_addr   : std_logic_vector(15 downto 0);
- signal cpu_di     : std_logic_vector( 7 downto 0);
- signal cpu_do     : std_logic_vector( 7 downto 0);
- signal cpu_rw_n   : std_logic;
- signal cpu_irq    : std_logic;
+signal en_cpu     : std_logic := '0';
+signal cpu_addr   : std_logic_vector(15 downto 0);
+signal cpu_di     : std_logic_vector( 7 downto 0);
+signal cpu_do     : std_logic_vector( 7 downto 0);
+signal cpu_rw_n   : std_logic;
+signal cpu_irq    : std_logic;
 
- signal addr_bus      : std_logic_vector(15 downto 0);
- signal data_bus_high : std_logic_vector( 7 downto 0);
- signal data_bus_low  : std_logic_vector( 7 downto 0);
- signal data_bus      : std_logic_vector( 7 downto 0);
- signal we_bus        : std_logic;
+signal addr_bus      : std_logic_vector(15 downto 0);
+signal data_bus_high : std_logic_vector( 7 downto 0);
+signal data_bus_low  : std_logic_vector( 7 downto 0);
+signal data_bus      : std_logic_vector( 7 downto 0);
+signal we_bus        : std_logic;
 
- signal decod_addr : std_logic_vector( 8 downto 0);
- signal decod_do   : std_logic_vector( 7 downto 0);
+signal decod_addr : std_logic_vector( 8 downto 0);
+signal decod_do   : std_logic_vector( 7 downto 0);
  
- signal vram_addr    : std_logic_vector(13 downto 0);
- signal vram_cs      : std_logic;
- signal vram_we      : std_logic;
- signal vram_l0_do   : std_logic_vector( 3 downto 0);
- signal vram_l0_we   : std_logic;
- signal vram_h0_do   : std_logic_vector( 3 downto 0);
- signal vram_h0_we   : std_logic;
- signal vram_l1_do   : std_logic_vector( 3 downto 0);
- signal vram_l1_we   : std_logic;
- signal vram_h1_do   : std_logic_vector( 3 downto 0);
- signal vram_h1_we   : std_logic;
- signal vram_l2_do   : std_logic_vector( 3 downto 0);
- signal vram_l2_we   : std_logic;
- signal vram_h2_do   : std_logic_vector( 3 downto 0);
- signal vram_h2_we   : std_logic;
+signal vram_addr    : std_logic_vector(13 downto 0);
+signal vram_cs      : std_logic;
+signal vram_we      : std_logic;
+signal vram_l0_do   : std_logic_vector( 3 downto 0);
+signal vram_l0_we   : std_logic;
+signal vram_h0_do   : std_logic_vector( 3 downto 0);
+signal vram_h0_we   : std_logic;
+signal vram_l1_do   : std_logic_vector( 3 downto 0);
+signal vram_l1_we   : std_logic;
+signal vram_h1_do   : std_logic_vector( 3 downto 0);
+signal vram_h1_we   : std_logic;
+signal vram_l2_do   : std_logic_vector( 3 downto 0);
+signal vram_l2_we   : std_logic;
+signal vram_h2_do   : std_logic_vector( 3 downto 0);
+signal vram_h2_we   : std_logic;
  
- signal rom_bank_a_do   : std_logic_vector( 7 downto 0);
- signal rom_bank_b_do   : std_logic_vector( 7 downto 0);
- signal rom_bank_c_do   : std_logic_vector( 7 downto 0);
- signal rom_bank_d_do   : std_logic_vector( 7 downto 0);
+signal rom_bank_a_do   : std_logic_vector( 7 downto 0);
+signal rom_bank_b_do   : std_logic_vector( 7 downto 0);
+signal rom_bank_c_do   : std_logic_vector( 7 downto 0);
+signal rom_bank_d_do   : std_logic_vector( 7 downto 0);
 
- signal rom_prog1_do    : std_logic_vector( 7 downto 0);
- signal rom_prog2_do    : std_logic_vector( 7 downto 0);
+signal rom_prog1_do    : std_logic_vector( 7 downto 0);
+signal rom_prog2_do    : std_logic_vector( 7 downto 0);
 
- signal sram_cs        : std_logic;
- signal sram_we        : std_logic;
- signal sram_do        : std_logic_vector( 7 downto 0);
+signal sram_cs        : std_logic;
+signal sram_we        : std_logic;
+signal sram_do        : std_logic_vector( 7 downto 0);
 
- signal page    : std_logic_vector( 2 downto 0);
- signal page_cs : std_logic;
+signal page    : std_logic_vector( 2 downto 0);
+signal page_cs : std_logic;
 
- signal seven_seg_cs : std_logic;
+signal seven_seg_cs : std_logic;
  
- signal flip     : std_logic;
- signal flip_cs  : std_logic;
- signal flip_bg  : std_logic;
- signal flip_bg_a: std_logic;
+signal flip     : std_logic;
+signal flip_cs  : std_logic;
+signal flip_bg  : std_logic;
+signal flip_bg_a: std_logic;
 
- signal dma_inh_n  : std_logic;
- signal dma_inh_cs : std_logic;
+signal dma_inh_n  : std_logic;
+signal dma_inh_cs : std_logic;
 
- signal cmos_do   : std_logic_vector(3 downto 0);
- signal cmos_we   : std_logic;
+signal cmos_do   : std_logic_vector(3 downto 0);
+signal cmos_we   : std_logic;
 
- signal palette_addr  : std_logic_vector(9 downto 0);
- signal palette_lo_we : std_logic;
- signal palette_lo_do : std_logic_vector(7 downto 0);
- signal palette_hi_we : std_logic;
- signal palette_hi_do : std_logic_vector(7 downto 0);
+signal palette_addr  : std_logic_vector(9 downto 0);
+signal palette_lo_we : std_logic;
+signal palette_lo_do : std_logic_vector(7 downto 0);
+signal palette_hi_we : std_logic;
+signal palette_hi_do : std_logic_vector(7 downto 0);
 
- signal fg_color_bank   : std_logic_vector(5 downto 0);
- signal fg_color_bank_cs: std_logic;
- signal bg_color_bank   : std_logic_vector(5 downto 0);
- signal bg_color_bank_cs: std_logic;
+signal fg_color_bank   : std_logic_vector(5 downto 0);
+signal fg_color_bank_cs: std_logic;
+signal bg_color_bank   : std_logic_vector(5 downto 0);
+signal bg_color_bank_cs: std_logic;
  
- signal map_we          : std_logic;
- signal map_addr        : std_logic_vector(10 downto 0);
- signal map_do          : std_logic_vector( 7 downto 0);
- signal map_x           : std_logic_vector( 8 downto 0);
- signal xscroll_high_cs : std_logic;
- signal xscroll_low_cs  : std_logic;
- signal xscroll         : std_logic_vector(11 downto 0);
+signal map_we          : std_logic;
+signal map_addr        : std_logic_vector(10 downto 0);
+signal map_do          : std_logic_vector( 7 downto 0);
+signal map_x           : std_logic_vector( 8 downto 0);
+signal xscroll_high_cs : std_logic;
+signal xscroll_low_cs  : std_logic;
+signal xscroll         : std_logic_vector(11 downto 0);
  
- signal graph_addr : std_logic_vector(12 downto 0);
- signal graph1_do  : std_logic_vector( 7 downto 0);
- signal graph2_do  : std_logic_vector( 7 downto 0);
- signal graph3_do  : std_logic_vector( 7 downto 0);
+signal graph_addr : std_logic_vector(12 downto 0);
+signal graph1_do  : std_logic_vector( 7 downto 0);
+signal graph2_do  : std_logic_vector( 7 downto 0);
+signal graph3_do  : std_logic_vector( 7 downto 0);
   
- signal pias_clock  : std_logic;
+signal pias_clock  : std_logic;
 
- signal pia_io1_cs     : std_logic;
- signal pia_io1_do     : std_logic_vector( 7 downto 0);
- signal pia_io1_pa_i   : std_logic_vector( 7 downto 0);
- signal pia_io1_pb_i   : std_logic_vector( 7 downto 0);
- signal pia_io1_irqa   : std_logic;
- signal pia_io1_irqb   : std_logic;
- signal pia_io1_ca2_o  : std_logic;
+signal pia_io1_cs     : std_logic;
+signal pia_io1_do     : std_logic_vector( 7 downto 0);
+signal pia_io1_pa_i   : std_logic_vector( 7 downto 0);
+signal pia_io1_pb_i   : std_logic_vector( 7 downto 0);
+signal pia_io1_irqa   : std_logic;
+signal pia_io1_irqb   : std_logic;
+signal pia_io1_ca2_o  : std_logic;
  
- signal pia_io2_cs    : std_logic;
- signal pia_io2_do    : std_logic_vector( 7 downto 0);
- signal pia_io2_irqa  : std_logic;
- signal pia_io2_irqb  : std_logic;
- signal pia_io2_pa_i  : std_logic_vector( 7 downto 0);
+signal pia_io2_cs    : std_logic;
+signal pia_io2_do    : std_logic_vector( 7 downto 0);
+signal pia_io2_irqa  : std_logic;
+signal pia_io2_irqb  : std_logic;
+signal pia_io2_pa_i  : std_logic_vector( 7 downto 0);
  
- signal vcnt_240 : std_logic;
- signal cnt_4ms  : std_logic;
+signal vcnt_240 : std_logic;
+signal cnt_4ms  : std_logic;
  
- signal pixel_cnt : std_logic_vector(2 downto 0) := "000";
- signal hcnt : std_logic_vector(5 downto 0) := "000000";
- signal vcnt : std_logic_vector(8 downto 0) := "000000000";
+signal pixel_cnt : std_logic_vector(2 downto 0) := "000";
+signal hcnt : std_logic_vector(5 downto 0) := "000000";
+signal vcnt : std_logic_vector(8 downto 0) := "000000000";
 
- signal fg_pixels   : std_logic_vector(23 downto 0);
- signal fg_pixels_0 : std_logic_vector( 3 downto 0);
- signal bg_pixels   : std_logic_vector(23 downto 0);
- signal bg_pixels_0 : std_logic_vector( 3 downto 0);
- signal bg_pixels_1 : std_logic_vector( 3 downto 0);
- signal bg_pixels_2 : std_logic_vector( 3 downto 0);
- signal bg_pixels_3 : std_logic_vector( 3 downto 0);
- signal bg_pixels_4 : std_logic_vector( 3 downto 0);
- signal bg_pixels_5 : std_logic_vector( 3 downto 0);
- signal bg_pixels_6 : std_logic_vector( 3 downto 0);
- signal bg_pixels_7 : std_logic_vector( 3 downto 0);
- signal bg_pixels_8 : std_logic_vector( 3 downto 0);
- signal bg_pixels_9 : std_logic_vector( 3 downto 0);
- signal bg_pixels_10: std_logic_vector( 3 downto 0);
- signal bg_pixels_shifted : std_logic_vector(3 downto 0);
+signal fg_pixels   : std_logic_vector(23 downto 0);
+signal fg_pixels_0 : std_logic_vector( 3 downto 0);
+signal bg_pixels   : std_logic_vector(23 downto 0);
+signal bg_pixels_0 : std_logic_vector( 3 downto 0);
+signal bg_pixels_1 : std_logic_vector( 3 downto 0);
+signal bg_pixels_2 : std_logic_vector( 3 downto 0);
+signal bg_pixels_3 : std_logic_vector( 3 downto 0);
+signal bg_pixels_4 : std_logic_vector( 3 downto 0);
+signal bg_pixels_5 : std_logic_vector( 3 downto 0);
+signal bg_pixels_6 : std_logic_vector( 3 downto 0);
+signal bg_pixels_7 : std_logic_vector( 3 downto 0);
+signal bg_pixels_8 : std_logic_vector( 3 downto 0);
+signal bg_pixels_9 : std_logic_vector( 3 downto 0);
+signal bg_pixels_10: std_logic_vector( 3 downto 0);
+signal bg_pixels_shifted : std_logic_vector(3 downto 0);
  
- signal hsync0,hsync1,hsync2,csync,hblank,vblank : std_logic;
+signal hsync0,hsync1,hsync2,csync,hblank,vblank : std_logic;
 
- signal blit_cs     : std_logic;
- signal blit_has_bus: std_logic;
- signal blit_start  : std_logic;
- signal blit_cmd    : std_logic_vector( 7 downto 0);
- signal blit_color  : std_logic_vector( 7 downto 0);
- signal blit_src    : std_logic_vector(15 downto 0);
- signal blit_dst    : std_logic_vector(15 downto 0);
- signal blit_width  : std_logic_vector( 7 downto 0);
- signal blit_height : std_logic_vector( 7 downto 0);
+signal blit_cs     : std_logic;
+signal blit_has_bus: std_logic;
+signal blit_start  : std_logic;
+signal blit_cmd    : std_logic_vector( 7 downto 0);
+signal blit_color  : std_logic_vector( 7 downto 0);
+signal blit_src    : std_logic_vector(15 downto 0);
+signal blit_dst    : std_logic_vector(15 downto 0);
+signal blit_width  : std_logic_vector( 7 downto 0);
+signal blit_height : std_logic_vector( 7 downto 0);
 
- signal blit_go         : std_logic;
- signal blit_cur_src    : std_logic_vector(15 downto 0);
- signal blit_cur_dst    : std_logic_vector(15 downto 0);
- signal blit_cur_width  : std_logic_vector( 7 downto 0);
- signal blit_cur_height : std_logic_vector( 7 downto 0);
- signal blit_dst_ori    : std_logic_vector(15 downto 0);
- signal blit_src_ori    : std_logic_vector(15 downto 0);
+signal blit_go         : std_logic;
+signal blit_cur_src    : std_logic_vector(15 downto 0);
+signal blit_cur_dst    : std_logic_vector(15 downto 0);
+signal blit_cur_width  : std_logic_vector( 7 downto 0);
+signal blit_cur_height : std_logic_vector( 7 downto 0);
+signal blit_dst_ori    : std_logic_vector(15 downto 0);
+signal blit_src_ori    : std_logic_vector(15 downto 0);
 
- signal blit_rw_n     : std_logic := '1';
- signal blit_addr     : std_logic_vector(15 downto 0);
- signal blit_data     : std_logic_vector( 7 downto 0);
- signal blit_halt     : std_logic := '0';
- signal blit_wr_inh_h : std_logic := '0';
- signal blit_wr_inh_l : std_logic := '0';
- signal right_nibble  : std_logic_vector(3 downto 0);
+signal blit_rw_n     : std_logic := '1';
+signal blit_addr     : std_logic_vector(15 downto 0);
+signal blit_data     : std_logic_vector( 7 downto 0);
+signal blit_halt     : std_logic := '0';
+signal blit_wr_inh_h : std_logic := '0';
+signal blit_wr_inh_l : std_logic := '0';
+signal right_nibble  : std_logic_vector(3 downto 0);
  
- signal cpu_halt    : std_logic;
- signal cpu_ba      : std_logic;
- signal cpu_bs      : std_logic;
+signal cpu_halt    : std_logic;
+signal cpu_ba      : std_logic;
+signal cpu_bs      : std_logic;
  
-
- signal sound_select : std_logic_vector(7 downto 0);
- signal sound_trig   : std_logic;
- signal sound_ack    : std_logic;
+signal sound_select : std_logic_vector(7 downto 0);
+signal sound_trig   : std_logic;
+signal sound_ack    : std_logic;
  
- signal sound_cpu_addr : std_logic_vector(15 downto 0);
+signal sound_cpu_addr : std_logic_vector(15 downto 0);
 
 -- logic to load roms from disk
 signal rom_bank_b_cs  		: std_logic;
@@ -459,7 +458,6 @@ begin
 	end if;
 end process;
 				
-
 pias_clock <= not clock_12;
 pia_io1_pa_i <= not(btn_aim_1 & btn_run_1) when pia_io1_ca2_o = '0' else not(btn_aim_2 & btn_run_2);
 pia_io1_pb_i <= btn_start_2 & btn_start_1 & "1111" & btn_trigger_2 & btn_trigger_1; 
@@ -771,11 +769,11 @@ port map(
 	clk      => en_cpu,   -- E clock input (falling edge)
 	rst      => reset,    -- reset input (active high)
 	vma      => open,     -- valid memory address (active high)
-   lic_out  => open,     -- last instruction cycle (active high)
-   ifetch   => open,     -- instruction fetch cycle (active high)
-   opfetch  => open,     -- opcode fetch (active high)
-   ba       => cpu_ba,   -- bus available (high on sync wait or DMA grant)
-   bs       => cpu_bs,   -- bus status (high on interrupt or reset vector fetch or DMA grant)
+    lic_out  => open,     -- last instruction cycle (active high)
+    ifetch   => open,     -- instruction fetch cycle (active high)
+    opfetch  => open,     -- opcode fetch (active high)
+    ba       => cpu_ba,   -- bus available (high on sync wait or DMA grant)
+    bs       => cpu_bs,   -- bus status (high on interrupt or reset vector fetch or DMA grant)
 	addr     => cpu_addr, -- address bus output
 	rw       => cpu_rw_n, -- read not write output
 	data_out => cpu_do,   -- data bus output
@@ -786,14 +784,6 @@ port map(
 	halt     => cpu_halt, -- halt input (active high) grants DMA
 	hold     => '0'       -- hold input (active high) extend bus cycle
 );
-
--- cpu program roms - IC9-10-54
---prog1_rom : entity work.inferno_prog1
---port map(
--- clk  => clock_12,
--- addr => addr_bus(11 downto 0),
--- data => rom_prog1_do
---);
 
 rom_prog2_cs <= '1' when dn_addr(17 downto 14) = "1000"  else '0';
 --prog2_rom : entity work.dpram generic map (8,13)
@@ -809,15 +799,6 @@ port map(
 	data => rom_prog2_do
 );
 
--- rom17.ic26 + rom15.ic24 
---bank_a_rom : entity work.inferno_bank_a
---port map(
--- clk  => clock_12,
--- addr => addr_bus(13 downto 0),
--- data => rom_bank_a_do
---);
-
-
 rom_bank_b_cs <= '1' when dn_addr(17 downto 15) = "001"  else '0';
 -- rom16.ic25 + rom14.ic23 + rom13.ic21 + rom12.ic19 
 bank_b_rom : entity work.dpram generic map (8,15)
@@ -832,7 +813,6 @@ port map(
 	q_b    => rom_bank_b_do
 );
 
-
 -- rom11.ic18 + rom9.ic16 + rom7.ic14 + rom5.ic12 
 bank_c_rom : entity work.inferno_bank_c
 port map(
@@ -843,8 +823,6 @@ port map(
  -- dn_wr => dn_wr,
  -- dn_addr=>dn_addr,
  -- dn_dout=>dn_dout,
-
--- rom_bank_c_cs=>rom_bank_c_cs
 );
 
 -- rom10.ic17 + rom8.ic15 + rom6.ic13 + rom4.ic11
@@ -857,11 +835,9 @@ port map(
  -- dn_wr => dn_wr,
  -- dn_addr=>dn_addr,
  -- dn_dout=>dn_dout,
-
--- rom_bank_d_cs=>rom_bank_d_cs
 );
 
-rom_graph1_cs <= '1' when dn_addr(16 downto 13) = "0010"  else '0';
+rom_graph1_cs <= '1' when dn_addr(17 downto 13) = "00010"  else '0';
 graph1_rom : entity work.dpram generic map (8,13)
 -- rom20.ic57
 port map(
@@ -875,7 +851,7 @@ port map(
 	q_b    => graph1_do
 );
 
-rom_graph2_cs <= '1' when dn_addr(16 downto 13) = "0011"  else '0';
+rom_graph2_cs <= '1' when dn_addr(17 downto 13) = "00011"  else '0';
 graph2_rom : entity work.dpram generic map (8,13)
 -- rom20.ic58
 port map(
@@ -889,8 +865,7 @@ port map(
 	q_b    => graph2_do
 );
 
-
-rom_graph3_cs <= '1' when dn_addr(16 downto 13) = "0000"  else '0';
+rom_graph3_cs <= '1' when dn_addr(17 downto 13) = "00000"  else '0';
 graph3_rom : entity work.dpram generic map (8,13)
 -- rom20.ic41
 port map(
@@ -908,153 +883,130 @@ port map(
 cpu_video_ram_l0 : entity work.gen_ram
 generic map( dWidth => 4, aWidth => 14)
 port map(
- clk  => clock_12,
- we   => vram_l0_we,
- addr => vram_addr,
- d    => data_bus(3 downto 0),
- q    => vram_l0_do
--- rom_M4_cs=>rom_M4_cs 
+	clk  => clock_12,
+	we   => vram_l0_we,
+ 	addr => vram_addr,
+ 	d    => data_bus(3 downto 0),
+ 	q    => vram_l0_do
 );
 
 -- cpu/video wram high 0 - IC98-101
 cpu_video_ram_h0 : entity work.gen_ram
 generic map( dWidth => 4, aWidth => 14)
 port map(
- clk  => clock_12,
- we   => vram_h0_we,
- addr => vram_addr,
- d    => data_bus(7 downto 4),
- q    => vram_h0_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => vram_h0_we,
+ 	addr => vram_addr,
+ 	d    => data_bus(7 downto 4),
+ 	q    => vram_h0_do
 );
 
 -- cpu/video wram low 1 - IC110-113
 cpu_video_ram_l1 : entity work.gen_ram
 generic map( dWidth => 4, aWidth => 14)
 port map(
- clk  => clock_12,
- we   => vram_l1_we,
- addr => vram_addr,
- d    => data_bus(3 downto 0),
- q    => vram_l1_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => vram_l1_we,
+ 	addr => vram_addr,
+ 	d    => data_bus(3 downto 0),
+ 	q    => vram_l1_do
 );
 
 -- cpu/video wram high 1 - IC106-109
 cpu_video_ram_h1 : entity work.gen_ram
 generic map( dWidth => 4, aWidth => 14)
 port map(
- clk  => clock_12,
- we   => vram_h1_we,
- addr => vram_addr,
- d    => data_bus(7 downto 4),
- q    => vram_h1_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => vram_h1_we,
+ 	addr => vram_addr,
+ 	d    => data_bus(7 downto 4),
+ 	q    => vram_h1_do
 );
 
 -- cpu/video wram low 2 - IC118-121
 cpu_video_ram_l2 : entity work.gen_ram
 generic map( dWidth => 4, aWidth => 14)
 port map(
- clk  => clock_12,
- we   => vram_l2_we,
- addr => vram_addr,
- d    => data_bus(3 downto 0),
- q    => vram_l2_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => vram_l2_we,
+ 	addr => vram_addr,
+ 	d    => data_bus(3 downto 0),
+ 	q    => vram_l2_do
 );
 
 -- cpu/video wram high 2 - IC115-117
 cpu_video_ram_h2 : entity work.gen_ram
 generic map( dWidth => 4, aWidth => 14)
 port map(
- clk  => clock_12,
- we   => vram_h2_we,
- addr => vram_addr,
- d    => data_bus(7 downto 4),
- q    => vram_h2_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => vram_h2_we,
+ 	addr => vram_addr,
+ 	d    => data_bus(7 downto 4),
+ 	q    => vram_h2_do
 );
-
 
 -- palette rams - IC78-77
 palette_ram_lo : entity work.gen_ram
 generic map( dWidth => 8, aWidth => 10)
 port map(
- clk  => clock_12,
- we   => palette_lo_we,
- addr => palette_addr,
- d    => data_bus,
- q    => palette_lo_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => palette_lo_we,
+ 	addr => palette_addr,
+ 	d    => data_bus,
+ 	q    => palette_lo_do
 );
 
 -- palette rams - IC76-75
 palette_ram_hi : entity work.gen_ram
 generic map( dWidth => 8, aWidth => 10)
 port map(
- clk  => clock_12,
- we   => palette_hi_we,
- addr => palette_addr,
- d    => data_bus,
- q    => palette_hi_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => palette_hi_we,
+ 	addr => palette_addr,
+ 	d    => data_bus,
+ 	q    => palette_hi_do
 );
-
 
 -- map ram - IC40
 map_ram : entity work.gen_ram
 generic map( dWidth => 8, aWidth => 11)
 port map(
- clk  => clock_12,
- we   => map_we,
- addr => map_addr,
- d    => data_bus,
- q    => map_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => map_we,
+ 	addr => map_addr,
+ 	d    => data_bus,
+ 	q    => map_do
 );
 
 -- sram 0 & 1
 sram : entity work.gen_ram
 generic map( dWidth => 8, aWidth => 12)
 port map(
- clk  => clock_12,
- we   => sram_we,
- addr => addr_bus(11 downto 0),
- d    => data_bus,
- q    => sram_do
--- rom_M4_cs=>rom_M4_cs
+ 	clk  => clock_12,
+ 	we   => sram_we,
+ 	addr => addr_bus(11 downto 0),
+ 	d    => data_bus,
+ 	q    => sram_do
 );
 
 -- cmos ram - IC59
 cmos_ram : entity work.inferno_cmos_ram
 generic map( dWidth => 4, aWidth => 10)
 port map(
- clk  => clock_12,
- we   => cmos_we,
- addr => addr_bus(9 downto 0),
- d    => data_bus(3 downto 0),
- q    => cmos_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	we   => cmos_we,
+ 	addr => addr_bus(9 downto 0),
+ 	d    => data_bus(3 downto 0),
+ 	q    => cmos_do
 );
 
 -- addr bus to video addr decoder - IC60
 video_addr_decoder : entity work.inferno_decoder
 port map(
- clk  => clock_12,
- addr => decod_addr,
- data => decod_do
--- rom_M4_cs=>rom_M4_cs 
+ 	clk  => clock_12,
+ 	addr => decod_addr,
+ 	data => decod_do
 );
-
--- gun gray code encoder
---gun_gray_encoder : entity work.gray_code
---port map(
--- clk  => clock_12,
--- addr => gun_bin_code,
--- data => gun_gray_code
---);
-
 
 -- pia iO1 : ic6 (5C)
 pia_io1 : entity work.pia6821
@@ -1115,7 +1067,6 @@ port map
 );
 
 -- video syncs and blanks
---video_csync <= csync;
 video_hblank <= hblank;
 video_vblank <= vblank;
 
@@ -1125,23 +1076,9 @@ process(clock_12)
 begin
 
 if rising_edge(clock_12) then
-
   if    hcnt = hcnt_base+0 then hsync0 <= '0';
   elsif hcnt = hcnt_base+6 then hsync0 <= '1';
   end if;
-
---   Removed for MiSTer
---  if    hcnt = hcnt_base+0     then hsync1 <= '0';
---  elsif hcnt = hcnt_base+3     then hsync1 <= '1';
---  elsif hcnt = hcnt_base+32-64 then hsync1 <= '0';
---  elsif hcnt = hcnt_base+35-64 then hsync1 <= '1';
---  end if;
-
---  if    hcnt = hcnt_base+0        then hsync2 <= '0';
---  elsif hcnt = hcnt_base+32-3-64  then hsync2 <= '1';
---    elsif hcnt = hcnt_base+32-64    then hsync2 <= '0';
---    elsif hcnt = hcnt_base+64-3-128 then hsync2 <= '1';
---    end if;
   
   if hcnt = 63 and pixel_cnt = 5 then
 	 if vcnt = 502 then
@@ -1150,19 +1087,6 @@ if rising_edge(clock_12) then
       if vsync_cnt < X"F" then vsync_cnt := vsync_cnt + '1'; end if;
     end if;
   end if;	 
-
---   Removed for MiSTer
---  if    vsync_cnt = 0 then csync <= hsync1;
---  elsif vsync_cnt = 1 then csync <= hsync1;
---  elsif vsync_cnt = 2 then csync <= hsync1;
---  elsif vsync_cnt = 3 then csync <= hsync2;
---  elsif vsync_cnt = 4 then csync <= hsync2;
---  elsif vsync_cnt = 5 then csync <= hsync2;
---  elsif vsync_cnt = 6 then csync <= hsync1;
---  elsif vsync_cnt = 7 then csync <= hsync1;
---  elsif vsync_cnt = 8 then csync <= hsync1;
---  else                     csync <= hsync0;
---  end if;
 
   if    hcnt = 48 and pixel_cnt = 3 then hblank <= '1'; 
   elsif hcnt =  1 and pixel_cnt = 3 then hblank <= '0';
@@ -1173,8 +1097,6 @@ if rising_edge(clock_12) then
   end if;
 
   -- external sync and blank outputs
---  video_blankn <= not (hblank or vblank);
-
   video_hs <= hsync0;
   
   if    vsync_cnt = 0 then video_vs <= '0';
@@ -1187,19 +1109,19 @@ end process;
 -- sound board - IC4-7-8-27
 inferno_sound_board : entity work.inferno_sound_board
 port map(
- clock_12   => clock_12,
- reset      => reset,
+	clock_12   => clock_12,
+	reset      => reset,
  
- dn_addr      => dn_addr,
- dn_data      => dn_data,
- dn_wr        => dn_wr,
+	dn_addr      => dn_addr,
+	dn_data      => dn_data,
+	dn_wr        => dn_wr,
 
- sound_select  => sound_select,
- sound_trig    => sound_trig, 
- sound_ack     => sound_ack,
- audio_out     => audio_out,
+	sound_select  => sound_select,
+	sound_trig    => sound_trig, 
+	sound_ack     => sound_ack,
+	audio_out     => audio_out,
  
- dbg_cpu_addr  => sound_cpu_addr
+	dbg_cpu_addr  => sound_cpu_addr
 );
 
 end struct;
