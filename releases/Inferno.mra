@@ -54,7 +54,6 @@
         <part crc="7ffb87f9" name="ic12.inf" />
 
         <!-- inferno_bank_d -->
-        <interleave output="32">  
         <part crc="b4684139" name="ic17.inf" />
         <part crc="128a6ad6" name="ic15.inf" />
         <part crc="83a9e4d6" name="ic13.inf" />
@@ -67,5 +66,4 @@
         <!-- inferno_decoder -->
 
 	</rom>
-
 </misterromdescription>
