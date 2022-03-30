@@ -153,7 +153,7 @@ port map(
 );
 
 -- cpu program rom
-rom_sound_cs <= '1' when dn_addr(17 downto 13) = "0001" else '0';
+rom_sound_cs <= '1' when dn_addr(17 downto 13) = "00001" else '0';
 cpu_prog_rom : work.dpram generic map (8,13)
 port map
 (

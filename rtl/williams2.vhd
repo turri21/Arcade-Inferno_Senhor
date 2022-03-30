@@ -65,19 +65,11 @@ port(
  
 	audio_out      : out std_logic_vector(7 downto 0);
  
-	btn_auto_up          : in std_logic;
-	btn_advance          : in std_logic; 
-	btn_high_score_reset : in std_logic;
-	btn_coin     : in std_logic;
-	
-	btn_up       : in std_logic;
-	btn_down     : in std_logic;
-	btn_left     : in std_logic;
-	btn_right    : in std_logic;
-	btn_start_2  : in std_logic;
-	btn_start_1  : in std_logic;
-	btn_trigger  : in std_logic;
- 
+	SW               : in    std_logic_vector(7 downto 0);
+	BTN              : in    std_logic_vector(3 downto 0);
+	JA               : in    std_logic_vector(7 downto 0);
+	JB               : in    std_logic_vector(7 downto 0);
+
 	sw_coktail_table : in std_logic;
 	seven_seg : out std_logic_vector( 7 downto 0);
  
@@ -458,9 +450,9 @@ begin
 end process;
 				
 pias_clock <= not clock_12;
-pia_io1_pa_i <= btn_trigger & '0' & btn_start_2 & btn_start_1 & btn_left & btn_down & btn_right & btn_up; 
+pia_io1_pa_i <= JA; 
 pia_io1_pb_i <= x"00";
-pia_io2_pa_i <= sw_coktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
+pia_io2_pa_i <= sw_coktail_table & "000" & BTN; 
 
 -- video syncs to pia
 vcnt_240  <= '1' when vcnt = '1'&X"F0" else '0';
@@ -1003,7 +995,7 @@ port map(
 );
 
 -- addr bus to video addr decoder - IC60
-rom_decoder_cs <= '1' when dn_addr(17 downto 9) = "100010000" else '0';
+rom_decoder_cs <= '1' when dn_addr(17 downto 10) = "10001000" else '0';
 video_addr_decoder : work.dpram generic map (8,9)
 port map(
 	clk_a  => clock_12,

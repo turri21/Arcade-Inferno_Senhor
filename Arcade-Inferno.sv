@@ -205,14 +205,15 @@ localparam CONF_STR = {
 	"-;",
 	"H0O89,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+	"-;",	
+	"h4O67,Fire,4-way,Move with Fire,Second Joystick;",	
 	"-;",
 	"OA,Advance,Off,On;",
 	"OB,Auto Up,Off,On;",
 	"OC,High Score Reset,Off,On;",
 	"-;",
 	"R0,Reset;",
-	"J1,Trigger,Start 1P,Start 2P,Coin,Pause;",
-	"jn,A,Start,Select,R,L;",
+	"J1,Fire 1,Fire 2,Fire 3,Fire 4,Start 1P,Start 2P,Coin,Pause;",
 	"V,v",`BUILD_DATE 
 };
 
@@ -231,8 +232,11 @@ wire  [1:0] buttons;
 wire [31:0] status;
 wire [10:0] ps2_key;
 
-wire [15:0] joystick_0;
-wire [15:0] joy = joystick_0;
+wire [31:0] joy1, joy2;
+wire [31:0] joy = joy1 | joy2;
+
+wire [15:0] joy1a, joy2a;
+wire [15:0] joya = j2 ? joy2a : joy1a;
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
@@ -255,7 +259,8 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.ioctl_dout(ioctl_dout),
 	.ioctl_index(ioctl_index),
 
-	.joystick_0(joystick_0)
+	.joystick_0(joy1),
+	.joystick_1(joy2)
 );
 
 ///////////////////////   CLOCKS   ///////////////////////////////
@@ -278,16 +283,85 @@ wire reset = RESET | status[0] | buttons[1];
 
 //////////////////////////////////////////////////////////////////
 
-wire m_right   = joy[0];
-wire m_left    = joy[1];
-wire m_down    = joy[2];
-wire m_up      = joy[3];
+wire m_start1  = joy[10];
+wire m_start2  = joy[11];
+wire m_coin1   = joy[12];
+wire m_advance = joy[13];
+wire m_autoup  = joy[14];
+wire m_pause   = joy[15];
 
-wire m_trigger = joy[4];
-wire m_start1  = joy[5];
-wire m_start2  = joy[6];
-wire m_coin    = joy[7];
-wire m_pause   = joy[8];
+wire m_right1  = joy1[0];
+wire m_left1   = joy1[1];
+wire m_down1   = joy1[2];
+wire m_up1     = joy1[3];
+wire m_fire1a  = joy1[4];
+wire m_fire1b  = joy1[5];
+wire m_fire1c  = joy1[6];
+wire m_fire1d  = joy1[7];
+wire m_fire1e  = joy1[8];
+wire m_fire1f  = joy1[9];
+
+wire m_right2  = joy2[0];
+wire m_left2   = joy2[1];
+wire m_down2   = joy2[2];
+wire m_up2     = joy2[3];
+wire m_fire2a  = joy2[4];
+wire m_fire2b  = joy2[5];
+wire m_fire2c  = joy2[6];
+wire m_fire2d  = joy2[7];
+wire m_fire2e  = joy2[8];
+wire m_fire2f  = joy2[9];
+
+wire m_right   = m_right1 | m_right2;
+wire m_left    = m_left1  | m_left2; 
+wire m_down    = m_down1  | m_down2; 
+wire m_up      = m_up1    | m_up2;   
+wire m_fire_a  = m_fire1a | m_fire2a;
+wire m_fire_b  = m_fire1b | m_fire2b;
+wire m_fire_c  = m_fire1c | m_fire2c;
+wire m_fire_d  = m_fire1d | m_fire2d;
+wire m_fire_e  = m_fire1e | m_fire2e;
+wire m_fire_f  = m_fire1f | m_fire2f;
+
+reg  [7:0] JA;
+reg  [7:0] JB;
+reg  [2:0] BTN;
+
+always @(*) begin
+	JA = 0;
+	JB = 0;
+	BTN = 0;
+
+	BTN = { m_start1, m_start2, m_coin1 };
+	JA  = ~{ status[7] ? {m_right2, m_left2, m_down2, m_up2} : status[6] ? {m_right, m_left, m_down, m_up} : {m_fire_a, m_fire_d, m_fire_b, m_fire_c},
+				status[7] ? {m_right1, m_left1, m_down1, m_up1} : {m_right, m_left, m_down, m_up}};
+	JB  = JA;	
+end	
+
+wire [3:0] dmx = m_left ? 4'd0 : m_right ? 4'd8 : 4'd7;
+wire [3:0] dmy = m_down ? 4'd0 : m_up    ? 4'd8 : 4'd7;
+
+wire [3:0] amx = ($signed(joya[7:0]) < -96) ? 4'd0  :
+                 ($signed(joya[7:0]) < -64) ? 4'd4  :
+                 ($signed(joya[7:0]) < -32) ? 4'd6  :
+                 ($signed(joya[7:0]) >  96) ? 4'd8  :
+                 ($signed(joya[7:0]) >  64) ? 4'd9  :
+                 ($signed(joya[7:0]) >  32) ? 4'd11 : 4'd7;
+
+wire [3:0] amy = ($signed(joya[15:8]) < -96) ? 4'd8  :
+                 ($signed(joya[15:8]) < -64) ? 4'd9  :
+                 ($signed(joya[15:8]) < -32) ? 4'd11 :
+                 ($signed(joya[15:8]) >  96) ? 4'd0  :
+                 ($signed(joya[15:8]) >  64) ? 4'd4  :
+                 ($signed(joya[15:8]) >  32) ? 4'd6  : 4'd7; 
+
+reg j2 = 0;
+always @(posedge clk_sys) begin
+	if(joy2) j2 <= 1;
+	if(joy1) j2 <= 0;
+end
+
+//////////////////////////////////////////////////////////////////
 
 // DISPLAY
 wire hblank, vblank;
@@ -347,27 +421,10 @@ williams2 williams2
 
 	.audio_out(audio), // [7:0]
 
-	// see Robotron_MiSTer for example of what these do
-	.btn_auto_up(status[10]),
-	.btn_advance(status[11]),
-	.btn_high_score_reset(status[12]),
-
-	.btn_right(m_right),
-	.btn_left(m_left),
-	.btn_down(m_down),
-	.btn_up(m_up),
-
-	.btn_trigger(m_trigger),
-	.btn_start_1(m_start1),
-	.btn_start_2(m_start2),
-	.btn_coin(m_coin),
-	
-	// see doc/joysticks_pic.png for reasoning
-	// Right Analog stick + R trigger for aim+fire maybe? Needs UX thoughts.
-	//.btn_run_1(joyL1a),
-	//.btn_run_2(joyL2a),
-	//.btn_aim_1(joyL1a),
-	//.btn_aim_2(joyL2a),
+	.BTN( {BTN[2:0],reset} ),
+	.SW ( SW          ),
+	.JA ( JA          ),
+	.JB ( JB          ),
 
 	.sw_coktail_table(),
 	.seven_seg(),
