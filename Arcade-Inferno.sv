@@ -206,6 +206,10 @@ localparam CONF_STR = {
 	"H0O89,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
+	"OA,Advance,Off,On;",
+	"OB,Auto Up,Off,On;",
+	"OC,High Score Reset,Off,On;",
+	"-;",
 	"R0,Reset;",
 	"J1,Trigger,Start 1P,Start 2P,Coin,Pause;",
 	"jn,A,Start,Select,R,L;",
@@ -259,7 +263,6 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 wire clk_sys;
 wire pll_locked;
 wire clk_48,clk_12;
-wire clk_mem = clk_48;
 assign clk_sys=clk_12;
 
 pll pll
@@ -324,7 +327,7 @@ arcade_video #(256,12,1) arcade_video
 );
 
 wire [7:0] audio;
-assign AUDIO_L = audio;
+assign AUDIO_L = {audio, 6'd0};
 assign AUDIO_R = AUDIO_L;
 assign AUDIO_S = 0;
 
@@ -345,9 +348,9 @@ williams2 williams2
 	.audio_out(audio), // [7:0]
 
 	// see Robotron_MiSTer for example of what these do
-	.btn_auto_up(),
-	.btn_advance(),
-	.btn_high_score_reset(),
+	.btn_auto_up(status[10]),
+	.btn_advance(status[11]),
+	.btn_high_score_reset(status[12]),
 
 	.btn_right(m_right),
 	.btn_left(m_left),
@@ -358,6 +361,13 @@ williams2 williams2
 	.btn_start_1(m_start1),
 	.btn_start_2(m_start2),
 	.btn_coin(m_coin),
+	
+	// see doc/joysticks_pic.png for reasoning
+	// Right Analog stick + R trigger for aim+fire maybe? Needs UX thoughts.
+	.btn_run_1(joyL1a),
+	.btn_run_2(joyL2a),
+	.btn_aim_1(joyL1a),
+	.btn_aim_2(joyL2a),
 
 	.sw_coktail_table(),
 	.seven_seg(),
