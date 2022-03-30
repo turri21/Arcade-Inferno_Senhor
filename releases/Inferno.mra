@@ -64,6 +64,7 @@
         <part crc="dbf64a36" name="ic10.inf" />
 
         <!-- inferno_decoder -->
+        <part crc="0ea3f7fb" name="prom3" />
 
 	</rom>
 </misterromdescription>

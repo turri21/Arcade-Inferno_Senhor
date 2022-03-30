@@ -271,6 +271,7 @@ signal rom_graph1_cs  		: std_logic;
 signal rom_graph2_cs   		: std_logic;
 signal rom_graph3_cs   		: std_logic;
 signal rom_prog2_cs   		: std_logic;
+signal rom_decoder_cs 		: std_logic;
 
 begin
 
@@ -785,18 +786,17 @@ port map(
 	hold     => '0'       -- hold input (active high) extend bus cycle
 );
 
-rom_prog2_cs <= '1' when dn_addr(17 downto 14) = "1000"  else '0';
---prog2_rom : entity work.dpram generic map (8,13)
-prog2_rom : entity work.inferno_prog2
+rom_prog2_cs <= '1' when dn_addr(17 downto 13) = "10000"  else '0';
+prog2_rom : entity work.dpram generic map (8,13)
 port map(
-	--clk_b  => clock_12,
-	--we_b   => dn_wr and rom_prog2_cs,
-	--addr_b => dn_addr(12 downto 0),
-	--d_b    => dn_data,
+	clk_a => clock_12,
+	we_a => dn_wr and rom_prog2_cs,
+	addr_a => dn_addr(12 downto 0),
+	d_a => dn_data,
 
-	clk  => clock_12,
-	addr => addr_bus(12 downto 0),
-	data => rom_prog2_do
+	clk_b => clock_12,
+	addr_b => addr_bus(12 downto 0),
+	q_b => rom_prog2_do
 );
 
 rom_bank_b_cs <= '1' when dn_addr(17 downto 15) = "001"  else '0';
@@ -813,28 +813,32 @@ port map(
 	q_b    => rom_bank_b_do
 );
 
+rom_bank_c_cs <= '1' when dn_addr(17 downto 15) = "010"  else '0';
 -- rom11.ic18 + rom9.ic16 + rom7.ic14 + rom5.ic12 
-bank_c_rom : entity work.inferno_bank_c
+bank_c_rom : entity work.dpram generic map (8,15)
 port map(
- clk  => clock_12,
- addr => addr_bus(14 downto 0),
- data => rom_bank_c_do
+	clk_a  => clock_12,
+	we_a   => dn_wr and rom_bank_c_cs,
+	addr_a => dn_addr(14 downto 0),
+	d_a    => dn_data,
 
- -- dn_wr => dn_wr,
- -- dn_addr=>dn_addr,
- -- dn_dout=>dn_dout,
+	clk_b  => clock_12,
+	addr_b => addr_bus(14 downto 0),
+	q_b    => rom_bank_c_do
 );
 
+rom_bank_d_cs <= '1' when dn_addr(17 downto 15) = "011"  else '0';
 -- rom10.ic17 + rom8.ic15 + rom6.ic13 + rom4.ic11
-bank_d_rom : entity work.inferno_bank_d
+bank_d_rom : entity work.dpram generic map (8,15)
 port map(
- clk  => clock_12,
- addr => addr_bus(14 downto 0),
- data => rom_bank_d_do
+	clk_a  => clock_12,
+	we_a   => dn_wr and rom_bank_d_cs,
+	addr_a => dn_addr(14 downto 0),
+	d_a    => dn_data,
 
- -- dn_wr => dn_wr,
- -- dn_addr=>dn_addr,
- -- dn_dout=>dn_dout,
+	clk_b  => clock_12,
+	addr_b => addr_bus(14 downto 0),
+	q_b    => rom_bank_d_do
 );
 
 rom_graph1_cs <= '1' when dn_addr(17 downto 13) = "00010"  else '0';
@@ -1001,11 +1005,17 @@ port map(
 );
 
 -- addr bus to video addr decoder - IC60
-video_addr_decoder : entity work.inferno_decoder
+rom_decoder_cs <= '1' when dn_addr(17 downto 9) = "100010000" else '0';
+video_addr_decoder : work.dpram generic map (8,9)
 port map(
- 	clk  => clock_12,
- 	addr => decod_addr,
- 	data => decod_do
+	clk_a  => clock_12,
+	we_a   => dn_wr and rom_decoder_cs,
+	addr_a => dn_addr(8 downto 0),
+	d_a    => dn_data,
+
+	clk_b  => clock_12,
+	addr_b => decod_addr,
+	q_b    => decod_do
 );
 
 -- pia iO1 : ic6 (5C)

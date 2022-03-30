@@ -13,12 +13,12 @@ set_global_assignment -name VHDL_FILE rtl/kbd_joystick.vhd
 set_global_assignment -name VHDL_FILE rtl/pia6821.vhd
 set_global_assignment -name VHDL_FILE rtl/williams2.vhd
 
-set_global_assignment -name VHDL_FILE rtl/rom/inferno_bank_b.vhd
-set_global_assignment -name VHDL_FILE rtl/rom/inferno_bank_c.vhd
-set_global_assignment -name VHDL_FILE rtl/rom/inferno_bank_d.vhd
+#set_global_assignment -name VHDL_FILE rtl/rom/inferno_bank_b.vhd
+#set_global_assignment -name VHDL_FILE rtl/rom/inferno_bank_c.vhd
+#set_global_assignment -name VHDL_FILE rtl/rom/inferno_bank_d.vhd
 set_global_assignment -name VHDL_FILE rtl/rom/inferno_decoder.vhd
 #set_global_assignment -name VHDL_FILE rtl/rom/inferno_graph1.vhd
-set_global_assignment -name VHDL_FILE rtl/rom/inferno_graph2.vhd
+#set_global_assignment -name VHDL_FILE rtl/rom/inferno_graph2.vhd
 #set_global_assignment -name VHDL_FILE rtl/rom/inferno_graph3.vhd
-set_global_assignment -name VHDL_FILE rtl/rom/inferno_prog2.vhd
+#set_global_assignment -name VHDL_FILE rtl/rom/inferno_prog2.vhd
 #set_global_assignment -name VHDL_FILE rtl/rom/inferno_sound.vhd
