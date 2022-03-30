@@ -364,10 +364,10 @@ williams2 williams2
 	
 	// see doc/joysticks_pic.png for reasoning
 	// Right Analog stick + R trigger for aim+fire maybe? Needs UX thoughts.
-	.btn_run_1(joyL1a),
-	.btn_run_2(joyL2a),
-	.btn_aim_1(joyL1a),
-	.btn_aim_2(joyL2a),
+	//.btn_run_1(joyL1a),
+	//.btn_run_2(joyL2a),
+	//.btn_aim_1(joyL1a),
+	//.btn_aim_2(joyL2a),
 
 	.sw_coktail_table(),
 	.seven_seg(),
