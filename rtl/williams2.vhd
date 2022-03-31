@@ -65,10 +65,19 @@ port(
  
 	audio_out      : out std_logic_vector(7 downto 0);
  
-	SW               : in    std_logic_vector(7 downto 0);
-	BTN              : in    std_logic_vector(3 downto 0);
-	JA               : in    std_logic_vector(7 downto 0);
-	JB               : in    std_logic_vector(7 downto 0);
+	btn_auto_up          : in std_logic;
+ 	btn_advance          : in std_logic; 
+ 	btn_high_score_reset : in std_logic;
+
+ 	btn_trigger_1 : in std_logic;
+ 	btn_trigger_2 : in std_logic;
+ 	btn_coin      : in std_logic;
+ 	btn_start_2   : in std_logic;
+ 	btn_start_1   : in std_logic;
+ 	btn_run_1     : in std_logic_vector(3 downto 0);
+ 	btn_run_2     : in std_logic_vector(3 downto 0);
+ 	btn_aim_1     : in std_logic_vector(3 downto 0);
+ 	btn_aim_2     : in std_logic_vector(3 downto 0);
 
 	sw_coktail_table : in std_logic;
 	seven_seg : out std_logic_vector( 7 downto 0);
@@ -460,11 +469,10 @@ begin
 	end if;
 end process;
 
--- TODO: remap the io1 and io2 to pia6821 properly based on keyb and joy handling
 pias_clock <= not clock_12;
-pia_io1_pa_i <= JA; 
-pia_io1_pb_i <= x"00";
-pia_io2_pa_i <= sw_coktail_table & "000" & BTN; 
+pia_io1_pa_i <= not(btn_aim_1 & btn_run_1) when pia_io1_ca2_o = '0' else not(btn_aim_2 & btn_run_2);
+pia_io1_pb_i <= btn_start_2 & btn_start_1 & "1111" & btn_trigger_2 & btn_trigger_1; 
+pia_io2_pa_i <= sw_coktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
 
 keyboard : entity work.io_ps2_keyboard
 port map (
