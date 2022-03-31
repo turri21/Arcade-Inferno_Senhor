@@ -359,6 +359,21 @@ williams2 williams2
 	.btn_start_2(m_start2),
 	.btn_coin(m_coin),
 
+	// from DE10_lite
+ 	//.btn_advance          ( keys_HUA[0] ),
+ 	//.btn_auto_up          ( keys_HUA[1] ),
+ 	//.btn_high_score_reset ( keys_HUA[2] ),
+
+ 	//.btn_trigger_1  ( joyHBCPPFRLDU[4] ),
+ 	//.btn_trigger_2  ( joyHBCPPFRLDU[4] ),
+ 	//.btn_coin       ( joyHBCPPFRLDU[7] ),
+ 	//.btn_start_2    ( joyHBCPPFRLDU[6] ),
+ 	//.btn_start_1    ( joyHBCPPFRLDU[5] ),
+ 	//.btn_run_1      ( joyHBCPPFRLDU[3] & joyHBCPPFRLDU[1] & joyHBCPPFRLDU[2] & joyHBCPPFRLDU[0] ),
+ 	//.btn_run_2      ( joyHBCPPFRLDU[3] & joyHBCPPFRLDU[1] & joyHBCPPFRLDU[2] & joyHBCPPFRLDU[0] ),
+ 	//.btn_aim_1      ( joyHBCPPFRLDU[3] & joyHBCPPFRLDU[1] & joyHBCPPFRLDU[2] & joyHBCPPFRLDU[0] ), // aim should use separate controls
+ 	//.btn_aim_2      ( joyHBCPPFRLDU[3] & joyHBCPPFRLDU[1] & joyHBCPPFRLDU[2] & joyHBCPPFRLDU[0] ),
+
 	.sw_coktail_table(),
 	.seven_seg(),
 

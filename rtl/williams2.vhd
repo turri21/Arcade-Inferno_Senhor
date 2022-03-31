@@ -83,6 +83,8 @@ port(
  
 	dbg_out : out std_logic_vector(31 downto 0);
 
+	gpio          : inout std_logic_vector(35 downto 0);
+
 -- MiSTer rom loading
 	dn_addr              : in  std_logic_vector(17 downto 0);
 	dn_data              : in  std_logic_vector( 7 downto 0);
@@ -271,6 +273,15 @@ signal rom_graph3_cs   		: std_logic;
 signal rom_prog2_cs   		: std_logic;
 signal rom_decoder_cs 		: std_logic;
 
+-- keyboard and joy from DE10-Lite
+signal kbd_intr      : std_logic;
+signal kbd_scancode  : std_logic_vector(7 downto 0);
+signal joyHBCPPFRLDU : std_logic_vector(9 downto 0);
+signal keys_HUA      : std_logic_vector(2 downto 0);
+
+alias ps2_clk         : std_logic is gpio(35); --gpio(0);
+alias ps2_dat         : std_logic is gpio(34); --gpio(1);
+
 begin
 
 -- for debug
@@ -456,11 +467,31 @@ begin
 		end if;
 	end if;
 end process;
-				
+
+-- TODO: remap the io1 and io2 to pia6821 properly based on keyb and joy handling
 pias_clock <= not clock_12;
 pia_io1_pa_i <= btn_trigger & '0' & btn_start_2 & btn_start_1 & btn_left & btn_down & btn_right & btn_up; 
 pia_io1_pb_i <= x"00";
 pia_io2_pa_i <= sw_coktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
+
+keyboard : entity work.io_ps2_keyboard
+port map (
+  clk       => clock_12, -- use same clock as williams2 core
+  kbd_clk   => ps2_clk,
+  kbd_dat   => ps2_dat,
+  interrupt => kbd_intr,
+  scancode  => kbd_scancode
+);
+
+-- translate scancode to joystick
+joystick : entity work.kbd_joystick
+port map (
+  clk          => clock_12, -- use same clock as williams2 core
+  kbdint       => kbd_intr,
+  kbdscancode  => std_logic_vector(kbd_scancode), 
+  joyHBCPPFRLDU => joyHBCPPFRLDU,
+  keys_HUA     => keys_HUA
+);
 
 -- video syncs to pia
 vcnt_240  <= '1' when vcnt = '1'&X"F0" else '0';
