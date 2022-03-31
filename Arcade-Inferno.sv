@@ -391,7 +391,7 @@ arcade_video #(256,12,1) arcade_video
 
 	.clk_video(clk_48),
 
-	.RGB_in({r,g,b}),
+	.RGB_in({red,green,blue}),
 	.HBlank(hblank),
 	.VBlank(vblank),
 	.HSync(~hs),
@@ -413,7 +413,7 @@ williams2 williams2
 	.video_r(r),           // [3:0]
 	.video_g(g),           // [3:0]
 	.video_b(b),           // [3:0]
-	.video_i(),            // [3:0] Color Intensity options
+	.video_i(intensity),            // [3:0] Color Intensity options
 	.video_hblank(hblank), // 48 <-> 1
 	.video_vblank(vblank), // 504 <-> 262
 	.video_hs(hs),
