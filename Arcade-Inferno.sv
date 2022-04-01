@@ -207,7 +207,7 @@ localparam CONF_STR = {
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
 	"R0,Reset;",
-	"J1,L,R,U,D,Fire,Start 1P,Start 2P,Coin;",
+	"J1,Fire,Start 1P,Start 2P,Coin;",
 	"V,v",`BUILD_DATE 
 };
 
