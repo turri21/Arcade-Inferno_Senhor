@@ -229,6 +229,15 @@ wire [10:0] ps2_key;
 wire [31:0] joy1, joy2;
 wire [31:0] joy = joy1 | joy2;
 
+// Robotron
+reg j2 = 0;
+always @(posedge clk_sys) begin
+	if(joy2) j2 <= 1;
+	if(joy1) j2 <= 0;
+end
+wire [15:0] joy1a, joy2a;
+wire [15:0] joya = j2 ? joy2a : joy1a;
+
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
 	.clk_sys(clk_sys),
@@ -251,8 +260,66 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.ioctl_index(ioctl_index),
 
 	.joystick_0(joy1),
-	.joystick_1(joy2)
+	.joystick_1(joy2),
+
+	// Robotron
+	.joystick_l_analog_0(joy1a),
+	.joystick_r_analog_0(joy2a)
 );
+
+///////////////////////   ROBOTRON JOYSTICK   ///////////////////////////////
+
+wire m_start1  = joy[10];
+wire m_start2  = joy[11];
+wire m_coin1   = joy[12];
+wire m_advance = joy[13];
+wire m_autoup  = joy[14];
+wire m_pause   = joy[15];
+
+wire m_right1  = joy1[0];
+wire m_left1   = joy1[1];
+wire m_down1   = joy1[2];
+wire m_up1     = joy1[3];
+wire m_fire1a  = joy1[4];
+wire m_fire1b  = joy1[5];
+wire m_fire1c  = joy1[6];
+wire m_fire1d  = joy1[7];
+wire m_fire1e  = joy1[8];
+wire m_fire1f  = joy1[9];
+
+wire m_right2  = joy2[0];
+wire m_left2   = joy2[1];
+wire m_down2   = joy2[2];
+wire m_up2     = joy2[3];
+wire m_fire2a  = joy2[4];
+wire m_fire2b  = joy2[5];
+wire m_fire2c  = joy2[6];
+wire m_fire2d  = joy2[7];
+wire m_fire2e  = joy2[8];
+wire m_fire2f  = joy2[9];
+
+wire m_right   = m_right1 | m_right2;
+wire m_left    = m_left1  | m_left2; 
+wire m_down    = m_down1  | m_down2; 
+wire m_up      = m_up1    | m_up2;   
+wire m_fire_a  = m_fire1a | m_fire2a;
+wire m_fire_b  = m_fire1b | m_fire2b;
+wire m_fire_c  = m_fire1c | m_fire2c;
+wire m_fire_d  = m_fire1d | m_fire2d;
+wire m_fire_e  = m_fire1e | m_fire2e;
+wire m_fire_f  = m_fire1f | m_fire2f;
+
+reg  [7:0] JA;
+reg  [7:0] JB;
+reg  [7:0] SW;
+reg  [7:0] BTN;
+
+always @(*) begin
+	BTN = { m_start1, m_start2, m_coin1 };
+	JA  = ~{ status[7] ? {m_right2, m_left2, m_down2, m_up2} : status[6] ? {m_right, m_left, m_down, m_up} : {m_fire_a, m_fire_d, m_fire_b, m_fire_c},
+				status[7] ? {m_right1, m_left1, m_down1, m_up1} : {m_right, m_left, m_down, m_up}};
+	JB  = JA;
+end
 
 ///////////////////////   CLOCKS   ///////////////////////////////
 
@@ -344,6 +411,9 @@ williams2 williams2
  	.btn_run_2      ( joy2[3] & joy2[1] & joy2[2] & joy2[0] ),
  	.btn_aim_1      ( joy1[3] & joy1[1] & joy1[2] & joy1[0] ), 
  	.btn_aim_2      ( joy2[3] & joy2[1] & joy2[2] & joy2[0] ),
+
+	.BTN (BTN),
+	.JA (JA),
 
 	.sw_coktail_table(),
 	.seven_seg(),

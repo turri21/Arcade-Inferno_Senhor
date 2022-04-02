@@ -86,6 +86,16 @@ port(
 
 	gpio          : inout std_logic_vector(35 downto 0);
 
+-- Robotron: Switches
+	SW               : in    std_logic_vector(7 downto 0);
+
+-- Robotron: Buttons
+	BTN              : in    std_logic_vector(7 downto 0);
+
+-- Robotron: 12-pin connectors
+	JA               : in    std_logic_vector(7 downto 0);
+	JB               : in    std_logic_vector(7 downto 0);
+
 -- MiSTer rom loading
 	dn_addr              : in  std_logic_vector(17 downto 0);
 	dn_data              : in  std_logic_vector( 7 downto 0);
@@ -470,9 +480,9 @@ begin
 end process;
 
 pias_clock <= not clock_12;
-pia_io1_pa_i <= not(btn_aim_1 & btn_run_1) when pia_io1_ca2_o = '0' else not(btn_aim_2 & btn_run_2);
-pia_io1_pb_i <= btn_start_2 & btn_start_1 & "1111" & btn_trigger_2 & btn_trigger_1; 
-pia_io2_pa_i <= sw_coktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
+pia_io1_pa_i <= JA; --not(btn_aim_1 & btn_run_1) when pia_io1_ca2_o = '0' else not(btn_aim_2 & btn_run_2);
+pia_io1_pb_i <= BTN; --btn_start_2 & btn_start_1 & "1111" & btn_trigger_2 & btn_trigger_1; 
+--pia_io2_pa_i <= sw_coktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
 
 keyboard : entity work.io_ps2_keyboard
 port map (
