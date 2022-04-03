@@ -207,7 +207,7 @@ localparam CONF_STR = {
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
 	"R0,Reset;",
-	"J1,Fire,Start 1P,Start 2P,Coin;",
+	"J1,Fire 1,Fire 2,Fire 3,Fire 4,Start 1P,Start 2P,Coin,Pause;",
 	"V,v",`BUILD_DATE 
 };
 
@@ -309,6 +309,35 @@ wire m_fire_d  = m_fire1d | m_fire2d;
 wire m_fire_e  = m_fire1e | m_fire2e;
 wire m_fire_f  = m_fire1f | m_fire2f;
 
+/*
+static INPUT_PORTS_START( robotron )
+	PORT_START("IN0")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICKLEFT_UP ) PORT_NAME("Move Up")
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICKLEFT_DOWN ) PORT_NAME("Move Down")
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_JOYSTICKLEFT_LEFT ) PORT_NAME("Move Left")
+	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_JOYSTICKLEFT_RIGHT ) PORT_NAME("Move Right")
+	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_START1 )
+	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_START2 )
+	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_JOYSTICKRIGHT_UP ) PORT_NAME("Fire Up")
+	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_JOYSTICKRIGHT_DOWN ) PORT_NAME("Fire Down")
+
+	PORT_START("IN1")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICKRIGHT_LEFT ) PORT_NAME("Fire Left")
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICKRIGHT_RIGHT ) PORT_NAME("Fire Right")
+	PORT_BIT( 0xfc, IP_ACTIVE_HIGH, IPT_UNKNOWN )
+
+	PORT_START("IN2")
+	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_SERVICE1 ) PORT_NAME("Auto Up / Manual Down") PORT_TOGGLE
+	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_SERVICE ) PORT_NAME("Advance")
+	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_COIN3 )
+	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_MEMORY_RESET ) PORT_NAME("High Score Reset")
+	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_COIN1 )
+	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_COIN2 )
+	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_TILT )
+	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_UNKNOWN )
+INPUT_PORTS_END
+*/
+
 reg  [7:0] JA;
 reg  [7:0] JB;
 reg  [7:0] SW;
@@ -339,9 +368,8 @@ pll pll
 
 wire reset = RESET | status[0] | buttons[1];
 
-//////////////////////////////////////////////////////////////////
+///////////////////////   DISPLAY   ///////////////////////////////
 
-// DISPLAY
 wire hblank, vblank;
 wire hs, vs;
 wire [3:0] r,g,b,intensity;
@@ -391,26 +419,26 @@ williams2 williams2
 	.clock_12(clk_12),
 	.reset(reset),
 
-	.video_r(r),           // [3:0]
-	.video_g(g),           // [3:0]
-	.video_b(b),           // [3:0]
-	.video_i(intensity),            // [3:0] Color Intensity options
-	.video_hblank(hblank), // 48 <-> 1
-	.video_vblank(vblank), // 504 <-> 262
+	.video_r(r),           	// [3:0]
+	.video_g(g),           	// [3:0]
+	.video_b(b),           	// [3:0]
+	.video_i(intensity),   	// [3:0] Color Intensity options
+	.video_hblank(hblank), 	// 48 <-> 1
+	.video_vblank(vblank), 	// 504 <-> 262
 	.video_hs(hs),
 	.video_vs(vs),
 
-	.audio_out(audio), // [7:0]
+	.audio_out(audio), 		// [7:0]
 
- 	.btn_trigger_1  ( joy1[4] ),
- 	.btn_trigger_2  ( joy2[4] ),
- 	.btn_coin       ( joy1[7] ),
- 	.btn_start_2    ( joy2[6] ),
- 	.btn_start_1    ( joy1[5] ),
- 	.btn_run_1      ( joy1[3] & joy1[1] & joy1[2] & joy1[0] ),
- 	.btn_run_2      ( joy2[3] & joy2[1] & joy2[2] & joy2[0] ),
- 	.btn_aim_1      ( joy1[3] & joy1[1] & joy1[2] & joy1[0] ), 
- 	.btn_aim_2      ( joy2[3] & joy2[1] & joy2[2] & joy2[0] ),
+ 	//.btn_trigger_1  ( joy1[4] ),
+ 	//.btn_trigger_2  ( joy2[4] ),
+ 	//.btn_coin       ( joy1[7] ),
+ 	//.btn_start_2    ( joy2[6] ),
+ 	//.btn_start_1    ( joy1[5] ),
+ 	//.btn_run_1      ( joy1[3] & joy1[1] & joy1[2] & joy1[0] ),
+ 	//.btn_run_2      ( joy2[3] & joy2[1] & joy2[2] & joy2[0] ),
+ 	//.btn_aim_1      ( joy1[3] & joy1[1] & joy1[2] & joy1[0] ), 
+ 	//.btn_aim_2      ( joy2[3] & joy2[1] & joy2[2] & joy2[0] ),
 
 	.BTN (BTN),
 	.JA (JA),

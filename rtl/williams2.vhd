@@ -65,19 +65,19 @@ port(
  
 	audio_out      : out std_logic_vector(7 downto 0);
  
-	btn_auto_up          : in std_logic;
- 	btn_advance          : in std_logic; 
- 	btn_high_score_reset : in std_logic;
+	--btn_auto_up          : in std_logic;
+ 	--btn_advance          : in std_logic; 
+ 	--btn_high_score_reset : in std_logic;
 
- 	btn_trigger_1 : in std_logic;
- 	btn_trigger_2 : in std_logic;
- 	btn_coin      : in std_logic;
- 	btn_start_2   : in std_logic;
- 	btn_start_1   : in std_logic;
- 	btn_run_1     : in std_logic_vector(3 downto 0);
- 	btn_run_2     : in std_logic_vector(3 downto 0);
- 	btn_aim_1     : in std_logic_vector(3 downto 0);
- 	btn_aim_2     : in std_logic_vector(3 downto 0);
+ 	--btn_trigger_1 : in std_logic;
+ 	--btn_trigger_2 : in std_logic;
+ 	--btn_coin      : in std_logic;
+ 	--btn_start_2   : in std_logic;
+ 	--btn_start_1   : in std_logic;
+ 	--btn_run_1     : in std_logic_vector(3 downto 0);
+ 	--btn_run_2     : in std_logic_vector(3 downto 0);
+ 	--btn_aim_1     : in std_logic_vector(3 downto 0);
+ 	--btn_aim_2     : in std_logic_vector(3 downto 0);
 
 	sw_coktail_table : in std_logic;
 	seven_seg : out std_logic_vector( 7 downto 0);
