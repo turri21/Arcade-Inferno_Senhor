@@ -206,8 +206,13 @@ localparam CONF_STR = {
 	"H0O89,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
+	"OA,Advance,Off,On;",
+	"OB,Auto Up,Off,On;",
+	"OC,High Score Reset,Off,On;",
+	"-;",
 	"R0,Reset;",
-	"J1,Fire 1,Fire 2,Fire 3,Fire 4,Start 1P,Start 2P,Coin,Pause;",
+	"J1,Fire,Start 1P,Start 2P,Coin,Pause;",
+	"jn,A,B,X,Start,Select,R,L;",
 	"V,v",`BUILD_DATE 
 };
 
@@ -222,21 +227,12 @@ wire [24:0] ioctl_addr;
 wire [ 7:0] ioctl_dout;
 wire [15:0] ioctl_index;
 
-wire  [1:0] buttons;
+wire [ 1:0] buttons;
 wire [31:0] status;
 wire [10:0] ps2_key;
 
-wire [31:0] joy1, joy2;
-wire [31:0] joy = joy1 | joy2;
-
-// Robotron
-reg j2 = 0;
-always @(posedge clk_sys) begin
-	if(joy2) j2 <= 1;
-	if(joy1) j2 <= 0;
-end
-wire [15:0] joy1a, joy2a;
-wire [15:0] joya = j2 ? joy2a : joy1a;
+wire [15:0] joystick_0;
+wire [15:0] joy = joystick_0;
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
@@ -259,96 +255,21 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.ioctl_dout(ioctl_dout),
 	.ioctl_index(ioctl_index),
 
-	.joystick_0(joy1),
-	.joystick_1(joy2),
-
-	// Robotron
-	.joystick_l_analog_0(joy1a),
-	.joystick_r_analog_0(joy2a)
+	.joystick_0(joystick_0)
 );
 
-///////////////////////   ROBOTRON JOYSTICK   ///////////////////////////////
+///////////////////////   JOYSTICK   ///////////////////////////////
 
-wire m_start1  = joy[10];
-wire m_start2  = joy[11];
-wire m_coin1   = joy[12];
-wire m_advance = joy[13];
-wire m_autoup  = joy[14];
-wire m_pause   = joy[15];
+wire m_right   = joy[0];
+wire m_left    = joy[1];
+wire m_down    = joy[2];
+wire m_up      = joy[3];
 
-wire m_right1  = joy1[0];
-wire m_left1   = joy1[1];
-wire m_down1   = joy1[2];
-wire m_up1     = joy1[3];
-wire m_fire1a  = joy1[4];
-wire m_fire1b  = joy1[5];
-wire m_fire1c  = joy1[6];
-wire m_fire1d  = joy1[7];
-wire m_fire1e  = joy1[8];
-wire m_fire1f  = joy1[9];
-
-wire m_right2  = joy2[0];
-wire m_left2   = joy2[1];
-wire m_down2   = joy2[2];
-wire m_up2     = joy2[3];
-wire m_fire2a  = joy2[4];
-wire m_fire2b  = joy2[5];
-wire m_fire2c  = joy2[6];
-wire m_fire2d  = joy2[7];
-wire m_fire2e  = joy2[8];
-wire m_fire2f  = joy2[9];
-
-wire m_right   = m_right1 | m_right2;
-wire m_left    = m_left1  | m_left2; 
-wire m_down    = m_down1  | m_down2; 
-wire m_up      = m_up1    | m_up2;   
-wire m_fire_a  = m_fire1a | m_fire2a;
-wire m_fire_b  = m_fire1b | m_fire2b;
-wire m_fire_c  = m_fire1c | m_fire2c;
-wire m_fire_d  = m_fire1d | m_fire2d;
-wire m_fire_e  = m_fire1e | m_fire2e;
-wire m_fire_f  = m_fire1f | m_fire2f;
-
-/*
-static INPUT_PORTS_START( robotron )
-	PORT_START("IN0")
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICKLEFT_UP ) PORT_NAME("Move Up")
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICKLEFT_DOWN ) PORT_NAME("Move Down")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_JOYSTICKLEFT_LEFT ) PORT_NAME("Move Left")
-	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_JOYSTICKLEFT_RIGHT ) PORT_NAME("Move Right")
-	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_START1 )
-	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_START2 )
-	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_JOYSTICKRIGHT_UP ) PORT_NAME("Fire Up")
-	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_JOYSTICKRIGHT_DOWN ) PORT_NAME("Fire Down")
-
-	PORT_START("IN1")
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_JOYSTICKRIGHT_LEFT ) PORT_NAME("Fire Left")
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_JOYSTICKRIGHT_RIGHT ) PORT_NAME("Fire Right")
-	PORT_BIT( 0xfc, IP_ACTIVE_HIGH, IPT_UNKNOWN )
-
-	PORT_START("IN2")
-	PORT_BIT( 0x01, IP_ACTIVE_HIGH, IPT_SERVICE1 ) PORT_NAME("Auto Up / Manual Down") PORT_TOGGLE
-	PORT_BIT( 0x02, IP_ACTIVE_HIGH, IPT_SERVICE ) PORT_NAME("Advance")
-	PORT_BIT( 0x04, IP_ACTIVE_HIGH, IPT_COIN3 )
-	PORT_BIT( 0x08, IP_ACTIVE_HIGH, IPT_MEMORY_RESET ) PORT_NAME("High Score Reset")
-	PORT_BIT( 0x10, IP_ACTIVE_HIGH, IPT_COIN1 )
-	PORT_BIT( 0x20, IP_ACTIVE_HIGH, IPT_COIN2 )
-	PORT_BIT( 0x40, IP_ACTIVE_HIGH, IPT_TILT )
-	PORT_BIT( 0x80, IP_ACTIVE_HIGH, IPT_UNKNOWN )
-INPUT_PORTS_END
-*/
-
-reg  [7:0] JA;
-reg  [7:0] JB;
-reg  [7:0] SW;
-reg  [7:0] BTN;
-
-always @(*) begin
-	BTN = { m_start1, m_start2, m_coin1 };
-	JA  = ~{ status[7] ? {m_right2, m_left2, m_down2, m_up2} : status[6] ? {m_right, m_left, m_down, m_up} : {m_fire_a, m_fire_d, m_fire_b, m_fire_c},
-				status[7] ? {m_right1, m_left1, m_down1, m_up1} : {m_right, m_left, m_down, m_up}};
-	JB  = JA;
-end
+wire m_trigger = joy[4];
+wire m_start1  = joy[5];
+wire m_start2  = joy[6];
+wire m_coin    = joy[7];
+wire m_pause   = joy[8];
 
 ///////////////////////   CLOCKS   ///////////////////////////////
 
@@ -430,20 +351,21 @@ williams2 williams2
 
 	.audio_out(audio), 		// [7:0]
 
- 	//.btn_trigger_1  ( joy1[4] ),
- 	//.btn_trigger_2  ( joy2[4] ),
- 	//.btn_coin       ( joy1[7] ),
- 	//.btn_start_2    ( joy2[6] ),
- 	//.btn_start_1    ( joy1[5] ),
- 	//.btn_run_1      ( joy1[3] & joy1[1] & joy1[2] & joy1[0] ),
- 	//.btn_run_2      ( joy2[3] & joy2[1] & joy2[2] & joy2[0] ),
- 	//.btn_aim_1      ( joy1[3] & joy1[1] & joy1[2] & joy1[0] ), 
- 	//.btn_aim_2      ( joy2[3] & joy2[1] & joy2[2] & joy2[0] ),
+	.btn_auto_up(status[10]),
+	.btn_advance(status[11]),
+	.btn_high_score_reset(status[12]),
 
-	.BTN (BTN),
-	.JA (JA),
+	.btn_right(m_right),
+	.btn_left(m_left),
+	.btn_down(m_down),
+	.btn_up(m_up),
 
-	.sw_coktail_table(),
+	.btn_trigger(m_trigger),
+	.btn_start_1(m_start1),
+	.btn_start_2(m_start2),
+	.btn_coin(m_coin),
+
+	.sw_cocktail_table(),
 	.seven_seg(),
 
 	.dbg_out(),

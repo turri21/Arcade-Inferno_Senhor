@@ -65,36 +65,25 @@ port(
  
 	audio_out      : out std_logic_vector(7 downto 0);
  
-	--btn_auto_up          : in std_logic;
- 	--btn_advance          : in std_logic; 
- 	--btn_high_score_reset : in std_logic;
+	btn_auto_up          : in std_logic;
+	btn_advance          : in std_logic; 
+	btn_high_score_reset : in std_logic;
+	btn_coin     : in std_logic;
+	
+	btn_up       : in std_logic;
+	btn_down     : in std_logic;
+	btn_left     : in std_logic;
+	btn_right    : in std_logic;
+	btn_start_2  : in std_logic;
+	btn_start_1  : in std_logic;
+	btn_trigger  : in std_logic;
 
- 	--btn_trigger_1 : in std_logic;
- 	--btn_trigger_2 : in std_logic;
- 	--btn_coin      : in std_logic;
- 	--btn_start_2   : in std_logic;
- 	--btn_start_1   : in std_logic;
- 	--btn_run_1     : in std_logic_vector(3 downto 0);
- 	--btn_run_2     : in std_logic_vector(3 downto 0);
- 	--btn_aim_1     : in std_logic_vector(3 downto 0);
- 	--btn_aim_2     : in std_logic_vector(3 downto 0);
-
-	sw_coktail_table : in std_logic;
+	sw_cocktail_table : in std_logic;
 	seven_seg : out std_logic_vector( 7 downto 0);
  
 	dbg_out : out std_logic_vector(31 downto 0);
 
 	gpio          : inout std_logic_vector(35 downto 0);
-
--- Robotron: Switches
-	SW               : in    std_logic_vector(7 downto 0);
-
--- Robotron: Buttons
-	BTN              : in    std_logic_vector(7 downto 0);
-
--- Robotron: 12-pin connectors
-	JA               : in    std_logic_vector(7 downto 0);
-	JB               : in    std_logic_vector(7 downto 0);
 
 -- MiSTer rom loading
 	dn_addr              : in  std_logic_vector(17 downto 0);
@@ -480,9 +469,10 @@ begin
 end process;
 
 pias_clock <= not clock_12;
-pia_io1_pa_i <= JA; --not(btn_aim_1 & btn_run_1) when pia_io1_ca2_o = '0' else not(btn_aim_2 & btn_run_2);
-pia_io1_pb_i <= BTN; --btn_start_2 & btn_start_1 & "1111" & btn_trigger_2 & btn_trigger_1; 
---pia_io2_pa_i <= sw_coktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
+pia_io1_pa_i(7 downto 4) <= not ("00"& btn_start_1 & btn_start_2);
+pia_io1_pa_i(3 downto 0) <= not ('0' & btn_trigger & btn_right & btn_left) when pia_io1_ca2_o = '0'; 
+pia_io1_pb_i <= x"ff"; 
+pia_io2_pa_i <= sw_cocktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
 
 keyboard : entity work.io_ps2_keyboard
 port map (
