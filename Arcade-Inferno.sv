@@ -212,7 +212,7 @@ localparam CONF_STR = {
 	"-;",
 	"R0,Reset;",
 	"J1,Fire,Start 1P,Start 2P,Coin,Pause;",
-	"jn,A,B,X,Start,Select,R,L;",
+	"jn,A,B,X,Y,Start,Select,R,L;",
 	"V,v",`BUILD_DATE 
 };
 
@@ -331,9 +331,6 @@ wire [7:0] audio;
 assign AUDIO_L = {audio, 6'd0};
 assign AUDIO_R = AUDIO_L;
 assign AUDIO_S = 0;
-
-//wire [9:0] joyHBCPPFRLDU;
-//wire [2:0] keys_HUA;
 
 williams2 williams2
 (

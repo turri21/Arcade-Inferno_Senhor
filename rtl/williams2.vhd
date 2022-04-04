@@ -469,9 +469,14 @@ begin
 end process;
 
 pias_clock <= not clock_12;
-pia_io1_pa_i(7 downto 4) <= not ("00"& btn_start_1 & btn_start_2);
-pia_io1_pa_i(3 downto 0) <= not ('0' & btn_trigger & btn_right & btn_left) when pia_io1_ca2_o = '0'; 
-pia_io1_pb_i <= x"ff"; 
+
+pia_io1_pa_i <= not (btn_trigger & '0' & btn_start_2 & btn_start_1 & btn_left & btn_down & btn_right & btn_up); 
+pia_io1_pb_i <= x"ff";
+
+--pia_io1_pa_i(7 downto 4) <= not ("00"& btn_start_1 & btn_start_2);
+--pia_io1_pa_i(3 downto 0) <= not ('0' & btn_trigger & btn_right & btn_left) when pia_io1_ca2_o = '0'; 
+--pia_io1_pb_i <= x"ff"; 
+
 pia_io2_pa_i <= sw_cocktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
 
 keyboard : entity work.io_ps2_keyboard
