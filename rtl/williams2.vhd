@@ -468,10 +468,13 @@ begin
 	end if;
 end process;
 
+-- ///////////////////////   JOYSTICK   //////////////////////////////////////////////////////////////
+
 pias_clock <= not clock_12;
 
-pia_io1_pa_i <= not (btn_trigger & '0' & btn_start_2 & btn_start_1 & btn_left & btn_down & btn_right & btn_up); 
-pia_io1_pb_i <= x"ff";
+-- gives trigger1+2 and start1p+2p always on, pb_i is ff. if pb_i is set to 00, then trigger1+2, 1ps, and 2ps are not enabled by default
+pia_io1_pa_i <= (btn_trigger & '0' & btn_start_2 & btn_start_1 & btn_left & btn_down & btn_right & btn_up);  -- was not. disabling not forces all run and aim directions to always be on
+pia_io1_pb_i <= x"00";  -- was x"ff"
 
 --pia_io1_pa_i(7 downto 4) <= not ("00"& btn_start_1 & btn_start_2);
 --pia_io1_pa_i(3 downto 0) <= not ('0' & btn_trigger & btn_right & btn_left) when pia_io1_ca2_o = '0'; 
@@ -497,6 +500,8 @@ port map (
   joyHBCPPFRLDU => joyHBCPPFRLDU,
   keys_HUA     => keys_HUA
 );
+
+-- ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 -- video syncs to pia
 vcnt_240  <= '1' when vcnt = '1'&X"F0" else '0';

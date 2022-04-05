@@ -212,9 +212,10 @@ localparam CONF_STR = {
 	"-;",
 	"R0,Reset;",
 	"J1,Fire,Start 1P,Start 2P,Coin,Pause;",
-	"jn,A,B,X,Y,Start,Select,R,L;",
 	"V,v",`BUILD_DATE 
 };
+
+	// "jn,A,B,X,Y,Start,Select,R,L;",  not needed
 
 wire        forced_scandoubler;
 wire        direct_video;
@@ -259,17 +260,24 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 );
 
 ///////////////////////   JOYSTICK   ///////////////////////////////
+//	"J1,Fire,Start 1P,Start 2P,Coin,Pause;",
+//       4    5        6        7    8
 
-wire m_right   = joy[0];
-wire m_left    = joy[1];
-wire m_down    = joy[2];
-wire m_up      = joy[3];
+wire m_right   = joy[0];  // run up left
+wire m_left    = joy[1];  // run down left
+wire m_down    = joy[2];  // run down right
+wire m_up      = joy[3];  // run up right
 
 wire m_trigger = joy[4];
 wire m_start1  = joy[5];
 wire m_start2  = joy[6];
-wire m_coin    = joy[7];
+wire m_coin    = joy[7];  // B ("Left Coin")
 wire m_pause   = joy[8];
+
+
+// A = aim down left
+// X = aim down right
+// Y = aim up left
 
 ///////////////////////   CLOCKS   ///////////////////////////////
 
@@ -348,8 +356,8 @@ williams2 williams2
 
 	.audio_out(audio), 		// [7:0]
 
-	.btn_auto_up(status[10]),
-	.btn_advance(status[11]),
+	.btn_advance(status[10]),
+	.btn_auto_up(status[11]),
 	.btn_high_score_reset(status[12]),
 
 	.btn_right(m_right),
