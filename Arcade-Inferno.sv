@@ -232,8 +232,8 @@ wire [ 1:0] buttons;
 wire [31:0] status;
 wire [10:0] ps2_key;
 
-wire [15:0] joystick_0;
-wire [15:0] joy = joystick_0;
+wire [15:0] joystick_0, joystick_1;
+wire [15:0] joy = joystick_0 | joystick_1;
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
@@ -256,7 +256,8 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.ioctl_dout(ioctl_dout),
 	.ioctl_index(ioctl_index),
 
-	.joystick_0(joystick_0)
+	.joystick_0(joystick_0),
+	.joystick_1(joystick_1)
 );
 
 ///////////////////////   JOYSTICK   ///////////////////////////////

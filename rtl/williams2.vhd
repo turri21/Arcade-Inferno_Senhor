@@ -68,22 +68,22 @@ port(
 	btn_auto_up          : in std_logic;
 	btn_advance          : in std_logic; 
 	btn_high_score_reset : in std_logic;
-	btn_coin     : in std_logic;
+	btn_coin     		 : in std_logic;
 	
-	btn_up       : in std_logic;
-	btn_down     : in std_logic;
-	btn_left     : in std_logic;
-	btn_right    : in std_logic;
-	btn_start_2  : in std_logic;
-	btn_start_1  : in std_logic;
-	btn_trigger  : in std_logic;
+	btn_up       		 : in std_logic;
+	btn_down     		 : in std_logic;
+	btn_left     		 : in std_logic;
+	btn_right    		 : in std_logic;
+	btn_start_2  		 : in std_logic;
+	btn_start_1  		 : in std_logic;
+	btn_trigger  		 : in std_logic;
 
-	sw_cocktail_table : in std_logic;
-	seven_seg : out std_logic_vector( 7 downto 0);
+	sw_cocktail_table 	 : in std_logic;
+	seven_seg 			 : out std_logic_vector( 7 downto 0);
  
-	dbg_out : out std_logic_vector(31 downto 0);
+	dbg_out 			 : out std_logic_vector(31 downto 0);
 
-	gpio          : inout std_logic_vector(35 downto 0);
+	--gpio          		 : inout std_logic_vector(35 downto 0);
 
 -- MiSTer rom loading
 	dn_addr              : in  std_logic_vector(17 downto 0);
@@ -274,13 +274,13 @@ signal rom_prog2_cs   		: std_logic;
 signal rom_decoder_cs 		: std_logic;
 
 -- keyboard and joy from DE10-Lite
-signal kbd_intr      : std_logic;
-signal kbd_scancode  : std_logic_vector(7 downto 0);
-signal joyHBCPPFRLDU : std_logic_vector(9 downto 0);
-signal keys_HUA      : std_logic_vector(2 downto 0);
+--signal kbd_intr      : std_logic;
+--signal kbd_scancode  : std_logic_vector(7 downto 0);
+--signal joyHBCPPFRLDU : std_logic_vector(9 downto 0);
+--signal keys_HUA      : std_logic_vector(2 downto 0);
 
-alias ps2_clk         : std_logic is gpio(35); --gpio(0);
-alias ps2_dat         : std_logic is gpio(34); --gpio(1);
+--alias ps2_clk         : std_logic is gpio(35); --gpio(0);
+--alias ps2_dat         : std_logic is gpio(34); --gpio(1);
 
 begin
 
@@ -473,7 +473,7 @@ end process;
 pias_clock <= not clock_12;
 
 -- gives trigger1+2 and start1p+2p always on, pb_i is ff. if pb_i is set to 00, then trigger1+2, 1ps, and 2ps are not enabled by default
-pia_io1_pa_i <= (btn_trigger & '0' & btn_start_2 & btn_start_1 & btn_left & btn_down & btn_right & btn_up);  -- was not. disabling not forces all run and aim directions to always be on
+pia_io1_pa_i <= not (btn_trigger & '0' & btn_start_2 & btn_start_1 & btn_left & btn_down & btn_right & btn_up);  -- was not. disabling "not" forces all run and aim directions to always be on
 pia_io1_pb_i <= x"00";  -- was x"ff"
 
 --pia_io1_pa_i(7 downto 4) <= not ("00"& btn_start_1 & btn_start_2);
@@ -482,24 +482,24 @@ pia_io1_pb_i <= x"00";  -- was x"ff"
 
 pia_io2_pa_i <= sw_cocktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
 
-keyboard : entity work.io_ps2_keyboard
-port map (
-  clk       => clock_12, -- use same clock as williams2 core
-  kbd_clk   => ps2_clk,
-  kbd_dat   => ps2_dat,
-  interrupt => kbd_intr,
-  scancode  => kbd_scancode
-);
+--keyboard : entity work.io_ps2_keyboard
+--port map (
+--  clk       => clock_12, -- use same clock as williams2 core
+--  kbd_clk   => ps2_clk,
+--  kbd_dat   => ps2_dat,
+--  interrupt => kbd_intr,
+--  scancode  => kbd_scancode
+--);
 
 -- translate scancode to joystick
-joystick : entity work.kbd_joystick
-port map (
-  clk          => clock_12, -- use same clock as williams2 core
-  kbdint       => kbd_intr,
-  kbdscancode  => std_logic_vector(kbd_scancode), 
-  joyHBCPPFRLDU => joyHBCPPFRLDU,
-  keys_HUA     => keys_HUA
-);
+--joystick : entity work.kbd_joystick
+--port map (
+--  clk          => clock_12, -- use same clock as williams2 core
+--  kbdint       => kbd_intr,
+--  kbdscancode  => std_logic_vector(kbd_scancode), 
+--  joyHBCPPFRLDU => joyHBCPPFRLDU,
+--  keys_HUA     => keys_HUA
+--);
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
 
