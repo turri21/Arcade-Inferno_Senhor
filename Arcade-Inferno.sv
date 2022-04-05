@@ -211,11 +211,9 @@ localparam CONF_STR = {
 	"OC,High Score Reset,Off,On;",
 	"-;",
 	"R0,Reset;",
-	"J1,Fire,Start 1P,Start 2P,Coin,Pause;",
+	"J1,Trigger,Start 1P,Start 2P,Coin;",
 	"V,v",`BUILD_DATE 
 };
-
-	// "jn,A,B,X,Y,Start,Select,R,L;",  not needed
 
 wire        forced_scandoubler;
 wire        direct_video;
@@ -259,26 +257,6 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.joystick_0(joystick_0),
 	.joystick_1(joystick_1)
 );
-
-///////////////////////   JOYSTICK   ///////////////////////////////
-//	"J1,Fire,Start 1P,Start 2P,Coin,Pause;",
-//       4    5        6        7    8
-
-wire m_right   = joy[0];  // run up left
-wire m_left    = joy[1];  // run down left
-wire m_down    = joy[2];  // run down right
-wire m_up      = joy[3];  // run up right
-
-wire m_trigger = joy[4];
-wire m_start1  = joy[5];
-wire m_start2  = joy[6];
-wire m_coin    = joy[7];  // B ("Left Coin")
-wire m_pause   = joy[8];
-
-
-// A = aim down left
-// X = aim down right
-// Y = aim up left
 
 ///////////////////////   CLOCKS   ///////////////////////////////
 
@@ -338,15 +316,12 @@ end
 arcade_video #(256,12,1) arcade_video
 (
 	.*,
-
 	.clk_video(clk_48),
-
 	.RGB_in({ri[7:0],gi[7:0],bi[7:0]}),
 	.HBlank(hblank),
 	.VBlank(vblank),
 	.HSync(~hs),
 	.VSync(~vs),
-
 	.fx(status[5:3])
 );
 
@@ -375,17 +350,18 @@ williams2 williams2
 	.btn_auto_up(status[11]),
 	.btn_high_score_reset(status[12]),
 
-	.btn_right(m_right),
-	.btn_left(m_left),
-	.btn_down(m_down),
-	.btn_up(m_up),
+ 	.btn_trigger_1	(joy[4]),
+ 	.btn_trigger_2	(joy[4]),
+ 	.btn_start_1    (joy[5]),
+ 	.btn_start_2    (joy[6]),
+ 	.btn_coin      	(joy[7]),
 
-	.btn_trigger(m_trigger),
-	.btn_start_1(m_start1),
-	.btn_start_2(m_start2),
-	.btn_coin(m_coin),
+ 	.btn_run_1      (joy[3:0]),
+ 	.btn_run_2      (joy[3:0]),
+ 	.btn_aim_1      (joy[3:0]), // aim should use separate controls
+ 	.btn_aim_2      (joy[3:0]),
 
-	.sw_cocktail_table(),
+	.sw_coktail_table(),
 	.seven_seg(),
 
 	.dbg_out(),
