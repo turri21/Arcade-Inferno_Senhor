@@ -324,9 +324,11 @@ wire [7:0] color_lut[256] = '{
     8'd91, 8'd97, 8'd105, 8'd114, 8'd123, 8'd133, 8'd147, 8'd161, 8'd176, 8'd196, 8'd223, 8'd249, 8'd252, 8'd254, 8'd254, 8'd255
 };
 
-assign ri = ~| intensity ? 8'd0 : color_lut[{r, intensity}];
-assign gi = ~| intensity ? 8'd0 : color_lut[{g, intensity}];
-assign bi = ~| intensity ? 8'd0 : color_lut[{b, intensity}];
+always_ff @( clk_48 ) begin : rgbOutput
+	ri = ~| intensity ? 8'd0 : color_lut[{r, intensity}];
+	gi = ~| intensity ? 8'd0 : color_lut[{g, intensity}];
+	bi = ~| intensity ? 8'd0 : color_lut[{b, intensity}];
+end
 
 reg ce_pix;
 always @(posedge clk_48) begin
