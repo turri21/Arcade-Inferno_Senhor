@@ -5,7 +5,7 @@
 -- github.com/darfpga
 ---------------------------------------------------------------------------------
 -- gen_ram.vhd & io_ps2_keyboard
--------------------------------- 
+--------------------------------
 -- Copyright 2005-2008 by Peter Wendrich (pwsoft@syntiac.com)
 -- http://www.syntiac.com/fpga64.html
 ---------------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 -- Copyright (C) 2003 - 2010 John Kent
 ---------------------------------------------------------------------------------
 -- cpu68 - Version 9th Jan 2004 0.8
--- 6800/01 compatible CPU core 
+-- 6800/01 compatible CPU core
 -- GNU public license - December 2002 : John E. Kent
 ---------------------------------------------------------------------------------
 -- Educational use only
@@ -22,13 +22,13 @@
 -- Do not redistribute roms whatever the form
 -- Use at your own risk
 ---------------------------------------------------------------------------------
--- Version 0.0 -- 05/02/2022 -- 
+-- Version 0.0 -- 05/02/2022 --
 --		    initial version
 ---------------------------------------------------------------------------------
 --  Features :
 --   TV 15KHz mode only (atm)
 --   Cocktail mode : todo
--- 
+--
 --  Use with MAME roms from inferno.zip
 --
 ---------------------------------------------------------------------------------
@@ -48,11 +48,11 @@ entity williams2 is
 port(
 	clock_12     : in std_logic;
 	reset        : in std_logic;
- 
+
 	rom_addr     : out std_logic_vector(16 downto 0);
 	rom_do       : in  std_logic_vector( 7 downto 0);
 	rom_rd       : out std_logic;
- 
+
 -- tv15Khz_mode : in std_logic;
 	video_r        : out std_logic_vector(3 downto 0);
 	video_g        : out std_logic_vector(3 downto 0);
@@ -62,11 +62,11 @@ port(
 	video_vblank   : out std_logic;
 	video_hs       : out std_logic;
 	video_vs       : out std_logic;
- 
+
 	audio_out      : out std_logic_vector(7 downto 0);
- 
+
 	btn_auto_up          : in std_logic;
-	btn_advance          : in std_logic; 
+	btn_advance          : in std_logic;
 	btn_high_score_reset : in std_logic;
 
 	btn_trigger_1 : in std_logic;
@@ -81,7 +81,7 @@ port(
 
 	sw_coktail_table 	 : in std_logic;
 	seven_seg 			 : out std_logic_vector( 7 downto 0);
- 
+
 	dbg_out 			 : out std_logic_vector(31 downto 0);
 
 -- MiSTer rom loading
@@ -93,13 +93,13 @@ end williams2;
 
 architecture struct of williams2 is
 
-signal en_pixel     : std_logic := '0'; 
+signal en_pixel     : std_logic := '0';
 signal video_access : std_logic;
 signal graph_access : std_logic;
 
 signal color_cs     : std_logic;
 signal rom_bank_cs  : std_logic;
- 
+
 signal en_cpu     : std_logic := '0';
 signal cpu_addr   : std_logic_vector(15 downto 0);
 signal cpu_di     : std_logic_vector( 7 downto 0);
@@ -115,7 +115,7 @@ signal we_bus        : std_logic;
 
 signal decod_addr : std_logic_vector( 8 downto 0);
 signal decod_do   : std_logic_vector( 7 downto 0);
- 
+
 signal vram_addr    : std_logic_vector(13 downto 0);
 signal vram_cs      : std_logic;
 signal vram_we      : std_logic;
@@ -131,7 +131,7 @@ signal vram_l2_do   : std_logic_vector( 3 downto 0);
 signal vram_l2_we   : std_logic;
 signal vram_h2_do   : std_logic_vector( 3 downto 0);
 signal vram_h2_we   : std_logic;
- 
+
 signal rom_bank_a_do   : std_logic_vector( 7 downto 0);
 signal rom_bank_b_do   : std_logic_vector( 7 downto 0);
 signal rom_bank_c_do   : std_logic_vector( 7 downto 0);
@@ -148,7 +148,7 @@ signal page    : std_logic_vector( 2 downto 0);
 signal page_cs : std_logic;
 
 signal seven_seg_cs : std_logic;
- 
+
 signal flip     : std_logic;
 signal flip_cs  : std_logic;
 signal flip_bg  : std_logic;
@@ -170,7 +170,7 @@ signal fg_color_bank   : std_logic_vector(5 downto 0);
 signal fg_color_bank_cs: std_logic;
 signal bg_color_bank   : std_logic_vector(5 downto 0);
 signal bg_color_bank_cs: std_logic;
- 
+
 signal map_we          : std_logic;
 signal map_addr        : std_logic_vector(10 downto 0);
 signal map_do          : std_logic_vector( 7 downto 0);
@@ -178,12 +178,12 @@ signal map_x           : std_logic_vector( 8 downto 0);
 signal xscroll_high_cs : std_logic;
 signal xscroll_low_cs  : std_logic;
 signal xscroll         : std_logic_vector(11 downto 0);
- 
+
 signal graph_addr : std_logic_vector(12 downto 0);
 signal graph1_do  : std_logic_vector( 7 downto 0);
 signal graph2_do  : std_logic_vector( 7 downto 0);
 signal graph3_do  : std_logic_vector( 7 downto 0);
-  
+
 signal pias_clock  : std_logic;
 
 signal pia_io1_cs     : std_logic;
@@ -193,16 +193,16 @@ signal pia_io1_pb_i   : std_logic_vector( 7 downto 0);
 signal pia_io1_irqa   : std_logic;
 signal pia_io1_irqb   : std_logic;
 signal pia_io1_ca2_o  : std_logic;
- 
+
 signal pia_io2_cs    : std_logic;
 signal pia_io2_do    : std_logic_vector( 7 downto 0);
 signal pia_io2_irqa  : std_logic;
 signal pia_io2_irqb  : std_logic;
 signal pia_io2_pa_i  : std_logic_vector( 7 downto 0);
- 
+
 signal vcnt_240 : std_logic;
 signal cnt_4ms  : std_logic;
- 
+
 signal pixel_cnt : std_logic_vector(2 downto 0) := "000";
 signal hcnt : std_logic_vector(5 downto 0) := "000000";
 signal vcnt : std_logic_vector(8 downto 0) := "000000000";
@@ -222,7 +222,7 @@ signal bg_pixels_8 : std_logic_vector( 3 downto 0);
 signal bg_pixels_9 : std_logic_vector( 3 downto 0);
 signal bg_pixels_10: std_logic_vector( 3 downto 0);
 signal bg_pixels_shifted : std_logic_vector(3 downto 0);
- 
+
 signal hsync0,hsync1,hsync2,csync,hblank,vblank : std_logic;
 
 signal blit_cs     : std_logic;
@@ -250,20 +250,20 @@ signal blit_halt     : std_logic := '0';
 signal blit_wr_inh_h : std_logic := '0';
 signal blit_wr_inh_l : std_logic := '0';
 signal right_nibble  : std_logic_vector(3 downto 0);
- 
+
 signal cpu_halt    : std_logic;
 signal cpu_ba      : std_logic;
 signal cpu_bs      : std_logic;
- 
+
 signal sound_select : std_logic_vector(7 downto 0);
 signal sound_trig   : std_logic;
 signal sound_ack    : std_logic;
- 
+
 signal sound_cpu_addr : std_logic_vector(15 downto 0);
 
 -- logic to load roms from disk
 signal rom_bank_b_cs  		: std_logic;
-signal rom_bank_c_cs   		: std_logic; 
+signal rom_bank_c_cs   		: std_logic;
 signal rom_bank_d_cs   		: std_logic;
 signal rom_sound_cs 		: std_logic;
 signal rom_graph1_cs  		: std_logic;
@@ -275,48 +275,48 @@ signal rom_decoder_cs 		: std_logic;
 begin
 
 -- for debug
-process (clock_12) 
+process (clock_12)
 begin
-	if rising_edge(clock_12) then 
+	if rising_edge(clock_12) then
 --		dbg_out(15 downto 0) <= cpu_addr;
-		dbg_out(15 downto 0) <= sound_cpu_addr;		
+		dbg_out(15 downto 0) <= sound_cpu_addr;
 	end if;
 end process;
-		
+
 -- make pixels counters and cpu clock
 -- in original hardware cpu clock = 1us = 6pixels
 -- here one make 2 cpu clock within 1us
 process (reset, clock_12)
 begin
 	if rising_edge(clock_12) then
-	
+
 		en_pixel <= not en_pixel;
 		en_cpu <= '0';
 		video_access <= '0';
 		graph_access <= '0';
 		rom_rd <= '0';
-			
+
 		if pixel_cnt = "000" then en_cpu <= '1';       end if;
 		if pixel_cnt = "001" then rom_rd <= '1';       end if;
-		if pixel_cnt = "011" then video_access <= '1'; end if;			
+		if pixel_cnt = "011" then video_access <= '1'; end if;
 		if pixel_cnt = "100" then graph_access <= '1'; end if;
-	
-		if en_pixel = '1' then 		
+
+		if en_pixel = '1' then
 			if pixel_cnt = "101" then
 				pixel_cnt <= "000";
 			else
 				pixel_cnt <= pixel_cnt + '1';
 			end if;
-					
-		end if;						
-			
+
+		end if;
+
 	end if;
 end process;
 
 -- make hcnt and vcnt video scanner from pixel clocks and counts
--- 
+--
 --  pixels   |0|1|2|3|4|5|0|1|2|3|4|5|
---  hcnt     |     N     |  N+1      | 
+--  hcnt     |     N     |  N+1      |
 --
 --  hcnt [0..63] => 64 x 6 = 384 pixels,  1 pixel is 1us => 1 line is 64us (15.625KHz)
 --  vcnt [252..255,256..511] => 260 lines, 1 frame is 260 x 64us = 16.640ms (60.1Hz)
@@ -326,9 +326,9 @@ begin
 	if reset='1' then
 		hcnt <= "000000";
 		vcnt <= '0'&X"FC";
-	else 
+	else
 		if rising_edge(clock_12) then
-		
+
 			if (pixel_cnt = "101") and (en_pixel = '1' ) then
 				hcnt <= hcnt + '1';
 				if hcnt = "111101" then
@@ -339,7 +339,7 @@ begin
 					end if;
 				end if;
 			end if;
-									
+
 		end if;
 	end if;
 end process;
@@ -350,26 +350,26 @@ addr_bus <= blit_addr when blit_has_bus = '1' else cpu_addr;
 
 -- decod bus addr to vram addr
 decod_addr <= addr_bus(15 downto 13) &'0'& addr_bus(12 downto 8);
- 
+
 -- mux bus addr and video scanner to vram addr
-vram_addr <= 
+vram_addr <=
 	addr_bus (7 downto 0) & decod_do(5 downto 0) when video_access = '0' else
-	vcnt(7 downto 0) & hcnt;	
+	vcnt(7 downto 0) & hcnt;
 
 -- mux bus addr and video scanner to map ram addr
 map_x <= (("000" & (hcnt(5 downto 0)+1)) + ('0' & xscroll(10 downto 3))) xor (xscroll(11) & x"00") ;
 map_addr <=
-	addr_bus(3 downto 0) & addr_bus(10 downto 4) when video_access = '0' else 
+	addr_bus(3 downto 0) & addr_bus(10 downto 4) when video_access = '0' else
 	vcnt(7 downto 4) & map_x(8 downto 2);
 
 -- bg pixel delay
-process (clock_12) 
+process (clock_12)
 begin
-	if rising_edge(clock_12) then 
+	if rising_edge(clock_12) then
 		if en_pixel = '0' then
-			if flip_bg = '0' then 
-				bg_pixels_0 <= bg_pixels(23 downto 20); 
-			else 
+			if flip_bg = '0' then
+				bg_pixels_0 <= bg_pixels(23 downto 20);
+			else
 				bg_pixels_0 <= bg_pixels( 3 downto  0);
 			end if;
 			bg_pixels_1 <= bg_pixels_0;
@@ -382,10 +382,10 @@ begin
 			bg_pixels_8 <= bg_pixels_7;
 			bg_pixels_9 <= bg_pixels_8;
 			bg_pixels_10<= bg_pixels_9;
-			
-			if flip = '0' then 
+
+			if flip = '0' then
 				fg_pixels_0 <= fg_pixels(23 downto 20);
-			else 
+			else
 				fg_pixels_0 <= fg_pixels( 3 downto  0);
 			end if;
 
@@ -394,7 +394,7 @@ begin
 end process;
 
 with xscroll(2 downto 0) select
-bg_pixels_shifted <= 
+bg_pixels_shifted <=
 	bg_pixels_7 when "000",
 	bg_pixels_6 when "001",
 	bg_pixels_5 when "010",
@@ -403,13 +403,13 @@ bg_pixels_shifted <=
 	bg_pixels_2 when "101",
 	bg_pixels_1 when "110",
 	bg_pixels_0 when others;
-	
+
 --	mux bus addr and pixels data to palette addr
 palette_addr <=
-	addr_bus(10 downto 1) when color_cs = '1' else 
+	addr_bus(10 downto 1) when color_cs = '1' else
 	fg_color_bank & fg_pixels_0 when fg_pixels_0 /= x"0" else
 	bg_color_bank(5 downto 3) & vcnt(7 downto 5) & bg_pixels_shifted;
-	
+
 -- palette output to colors bits
 video_r <= palette_lo_do(3 downto 0);
 video_g <= palette_lo_do(7 downto 4);
@@ -424,9 +424,9 @@ video_i <= palette_hi_do(7 downto 4);
 
 ---- 24 bits pixels shift register
 ---- 6 pixels of 4 bits
-process (clock_12) 
+process (clock_12)
 begin
-	if rising_edge(clock_12) then 
+	if rising_edge(clock_12) then
 		if en_pixel = '0' then
 --		if screen_ctrl = '0' then
 			if video_access = '1' then
@@ -439,17 +439,17 @@ begin
 					graph_addr <= map_do(6 downto 0) & vcnt(3 downto 0) & not map_x(1) & not map_x(0);
 				end if;
 			else
-				fg_pixels <= fg_pixels(19 downto 0) & X"0" ;		
+				fg_pixels <= fg_pixels(19 downto 0) & X"0" ;
 			end if;
-			
+
 			if graph_access = '1' then
 				flip_bg <= flip_bg_a;
 				bg_pixels <= graph1_do & graph2_do & graph3_do;
 			else
-				if flip_bg = '0' then 
+				if flip_bg = '0' then
 					bg_pixels <= bg_pixels(19 downto 0) & X"0";
-				else 
-					bg_pixels <= X"0" & bg_pixels(23 downto 4);		
+				else
+					bg_pixels <= X"0" & bg_pixels(23 downto 4);
 				end if;
 			end if;
 --		else
@@ -462,8 +462,8 @@ end process;
 
 pias_clock <= not clock_12;
 pia_io1_pa_i <= not(btn_aim_1 & btn_run_1) when pia_io1_ca2_o = '0' else not(btn_aim_2 & btn_run_2);
-pia_io1_pb_i <= btn_start_2 & btn_start_1 & "1111" & btn_trigger_2 & btn_trigger_1; 
-pia_io2_pa_i <= sw_coktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up; 
+pia_io1_pb_i <= btn_start_2 & btn_start_1 & "1111" & btn_trigger_2 & btn_trigger_1;
+pia_io2_pa_i <= sw_coktail_table & "000" & btn_coin & btn_high_score_reset & btn_advance & btn_auto_up;
 
 -- ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -477,7 +477,7 @@ cpu_irq  <= pia_io2_irqa or pia_io2_irqb;
 -- chip select/we
 we_bus  <= '1' when (cpu_rw_n = '0' or blit_rw_n = '0') and en_pixel = '1' and en_cpu = '1' else '0';
 
-vram_cs <= '1' when color_cs = '0' and addr_bus < x"C000" and 
+vram_cs <= '1' when color_cs = '0' and addr_bus < x"C000" and
 						( (blit_has_bus = '0' ) or
 						  (blit_has_bus = '1' and (addr_bus < x"9000" or dma_inh_n = '0'))) else '0';
 
@@ -532,7 +532,7 @@ data_bus_high <=
 
 data_bus_low <=
 	palette_lo_do           when color_cs = '1' and addr_bus(0) = '0' else
-	palette_hi_do           when color_cs = '1' and addr_bus(0) = '1' else	
+	palette_hi_do           when color_cs = '1' and addr_bus(0) = '1' else
 --	rom_do                  when rom_bank_cs = '1' else
 	rom_bank_a_do           when rom_bank_cs = '1' and (page = "010"                ) else
 	rom_bank_b_do           when rom_bank_cs = '1' and (page = "110"                ) else
@@ -551,11 +551,11 @@ data_bus <=
 
 process (clock_12)
 begin
-	if rising_edge(clock_12) then 
+	if rising_edge(clock_12) then
 		cpu_di <= data_bus;
 	end if;
 end process;
-	
+
 -- misc. registers
 process (reset, clock_12)
 variable blit_h, blit_l : std_logic;
@@ -568,8 +568,8 @@ begin
 		dma_inh_n <='0';
 		fg_color_bank <= (others => '0');
 		bg_color_bank <= (others => '0');
-	else 
-		if rising_edge(clock_12) then 
+	else
+		if rising_edge(clock_12) then
 			if page_cs = '1'          and we_bus = '1' then page          <= data_bus(2 downto 0); end if;
 			if seven_seg_cs = '1'     and we_bus = '1' then seven_seg     <= data_bus; end if;
 			if flip_cs = '1'          and we_bus = '1' then flip          <= data_bus(0); end if;
@@ -595,10 +595,10 @@ if reset='1' then
 	blit_dst    <= (others=>'0');
 	blit_width  <= (others=>'0');
 	blit_height <= (others=>'0');
-else 
-	if rising_edge(clock_12) then 		
+else
+	if rising_edge(clock_12) then
 		if blit_cs = '1' and we_bus = '1' then
-				case addr_bus(2 downto 0) is 
+				case addr_bus(2 downto 0) is
 					when "000" => blit_cmd <= data_bus;
 									  blit_start <= '1';
 					when "001" => blit_color <= data_bus;
@@ -607,14 +607,14 @@ else
 					when "100" => blit_dst(15 downto 8) <= data_bus;
 					when "101" => blit_dst( 7 downto 0) <= data_bus;
 					when "110" =>
-						if data_bus = X"00" then 
+						if data_bus = X"00" then
 							blit_width <= x"00";
 						else
 							blit_width <= data_bus-1;
 						end if;
-					
+
 					when "111" =>
-						if data_bus = X"00" then 
+						if data_bus = X"00" then
 							blit_height <= x"00";
 						else
 							blit_height <= data_bus-1;
@@ -622,8 +622,8 @@ else
 					when others => null;
 				end case;
 		end if;
-		
-		if blit_halt = '1' then 
+
+		if blit_halt = '1' then
 			blit_start <= '0';
 		end if;
 
@@ -642,14 +642,14 @@ if reset='1' then
 	blit_halt     <= '0';
 	blit_wr_inh_h <= '0';
 	blit_wr_inh_l <= '0';
-else 
-	if rising_edge(clock_12) then 
+else
+	if rising_edge(clock_12) then
 
 		-- sync cpu_halt in the middle of cpu cycle
 		if video_access = '1' then
 			cpu_halt <= blit_halt;
 		end if;
-		
+
 		--	intialize blit
 		if blit_start = '1' and blit_halt = '0' and video_access = '1' then
 			blit_halt <= '1';
@@ -665,67 +665,67 @@ else
 			blit_addr <= blit_src;
 			blit_rw_n <= '1';
 		end if;
-		
+
 		-- do blit
 		if blit_has_bus = '1' then
-		
-			-- read step (use graph access)			
-			if graph_access = '1' and en_pixel = '0' and blit_go = '1' then 
-			
+
+			-- read step (use graph access)
+			if graph_access = '1' and en_pixel = '0' and blit_go = '1' then
+
 				-- next step will be write
 				blit_addr <= blit_cur_dst;
 				blit_rw_n <= '0';
-				
+
 				-- also prepare next source address w.r.t source stride
 				if blit_cmd(0) = '0' then
-					blit_cur_src <= blit_cur_src + 1;							
-				else 
+					blit_cur_src <= blit_cur_src + 1;
+				else
 					if blit_cur_width = 0  then
-						blit_cur_src <= blit_src_ori + 1;							
-						blit_src_ori <= blit_src_ori + 1;							
-					else 
-						blit_cur_src <= blit_cur_src + 256;							
+						blit_cur_src <= blit_src_ori + 1;
+						blit_src_ori <= blit_src_ori + 1;
+					else
+						blit_cur_src <= blit_cur_src + 256;
 					end if;
 				end if;
 
 				-- get data from source and prepare data to be written
 				blit_h := not blit_cmd(7);
 				blit_l := not blit_cmd(6);
-				
+
 				-- right shift mode
 				if blit_cmd(5) = '0' then
 					data := data_bus;
 				else
-					data :=  right_nibble & data_bus(7 downto 4); 
-					right_nibble <= data_bus(3 downto 0); 
+					data :=  right_nibble & data_bus(7 downto 4);
+					right_nibble <= data_bus(3 downto 0);
 				end if;
-				
+
 				-- transparent mode : don't write pixel if src = 0
-				if blit_cmd(3) = '1' then 
+				if blit_cmd(3) = '1' then
 					if data(7 downto 4) = x"0" then blit_h := '0'; end if;
-					if data(3 downto 0) = x"0" then blit_l := '0'; end if;					
-				end if; 
-					
+					if data(3 downto 0) = x"0" then blit_l := '0'; end if;
+				end if;
+
 				-- solid mode : write color instead of src data
 				if blit_cmd(4) = '1' then
 					data := blit_color;
-				else 
+				else
 					data := data;
 				end if;
-				
+
 				-- put data to written on bus with write inhibits
 				blit_data <= data;
-				blit_wr_inh_h <= not blit_h; 
+				blit_wr_inh_h <= not blit_h;
 				blit_wr_inh_l <= not blit_l;
-					
+
 			end if;
-			
+
 			-- write step (use cpu access)
 			if en_cpu = '1' and en_pixel = '0' and blit_go = '1' then
 				-- next step will be read
 				blit_addr <= blit_cur_src;
 				blit_rw_n <= '1';
-				
+
 				-- also prepare next destination address w.r.t destination stride
 				-- or stop blit
 				if blit_cur_width = 0 then
@@ -737,39 +737,39 @@ else
 					else
 						blit_cur_width <= blit_width;
 						blit_cur_height <= blit_cur_height - 1;
-						
+
 						if blit_cmd(1) = '0' then
 							blit_cur_dst <= blit_cur_dst + 1;
-						else							
+						else
 							blit_cur_dst <= blit_dst_ori + 1;
-							blit_dst_ori <= blit_dst_ori + 1; 
+							blit_dst_ori <= blit_dst_ori + 1;
 						end if;
-						
+
 					end if;
 				else
 					blit_cur_width <= blit_cur_width - 1;
-					
+
 					if blit_cmd(1) = '0' then
 						blit_cur_dst <= blit_cur_dst + 1;
 					else
 						blit_cur_dst <= blit_cur_dst + 256;
-					end if;					
-				end if;					
+					end if;
+				end if;
 			end if;
-					
+
 			-- slow mode
 			if en_cpu = '1' and en_pixel = '0' and blit_cmd(2) = '1' then
 				blit_go <= not blit_go;
 			end if;
-												
-		end if; -- cpu halted	
+
+		end if; -- cpu halted
 	end if;
 end if;
 end process;
 
 -- microprocessor 6809 -IC28
 main_cpu : entity work.cpu09
-port map(	
+port map(
 	clk      => en_cpu,   -- E clock input (falling edge)
 	rst      => reset,    -- reset input (active high)
 	vma      => open,     -- valid memory address (active high)
@@ -802,8 +802,8 @@ port map(
 	q_b => rom_prog2_do
 );
 
-rom_bank_b_cs <= '1' when dn_addr(17 downto 15) = "001"  else '0';
--- rom16.ic25 + rom14.ic23 + rom13.ic21 + rom12.ic19 
+rom_bank_b_cs <= '1' when dn_addr(17 downto 15) = "000"  else '0';
+-- rom16.ic25 + rom14.ic23 + rom13.ic21 + rom12.ic19
 bank_b_rom : entity work.dpram generic map (8,15)
 port map(
 	clk_a  => clock_12,
@@ -816,8 +816,8 @@ port map(
 	q_b    => rom_bank_b_do
 );
 
-rom_bank_c_cs <= '1' when dn_addr(17 downto 15) = "010"  else '0';
--- rom11.ic18 + rom9.ic16 + rom7.ic14 + rom5.ic12 
+rom_bank_c_cs <= '1' when dn_addr(17 downto 15) = "001"  else '0';
+-- rom11.ic18 + rom9.ic16 + rom7.ic14 + rom5.ic12
 bank_c_rom : entity work.dpram generic map (8,15)
 port map(
 	clk_a  => clock_12,
@@ -830,7 +830,7 @@ port map(
 	q_b    => rom_bank_c_do
 );
 
-rom_bank_d_cs <= '1' when dn_addr(17 downto 15) = "011"  else '0';
+rom_bank_d_cs <= '1' when dn_addr(17 downto 15) = "010"  else '0';
 -- rom10.ic17 + rom8.ic15 + rom6.ic13 + rom4.ic11
 bank_d_rom : entity work.dpram generic map (8,15)
 port map(
@@ -844,7 +844,7 @@ port map(
 	q_b    => rom_bank_d_do
 );
 
-rom_graph1_cs <= '1' when dn_addr(17 downto 13) = "00010"  else '0';
+rom_graph1_cs <= '1' when dn_addr(17 downto 13) = "01100"  else '0';
 graph1_rom : entity work.dpram generic map (8,13)
 -- rom20.ic57
 port map(
@@ -858,7 +858,7 @@ port map(
 	q_b    => graph1_do
 );
 
-rom_graph2_cs <= '1' when dn_addr(17 downto 13) = "00011"  else '0';
+rom_graph2_cs <= '1' when dn_addr(17 downto 13) = "01101"  else '0';
 graph2_rom : entity work.dpram generic map (8,13)
 -- rom20.ic58
 port map(
@@ -872,7 +872,7 @@ port map(
 	q_b    => graph2_do
 );
 
-rom_graph3_cs <= '1' when dn_addr(17 downto 13) = "00000"  else '0';
+rom_graph3_cs <= '1' when dn_addr(17 downto 13) = "01110"  else '0';
 graph3_rom : entity work.dpram generic map (8,13)
 -- rom20.ic41
 port map(
@@ -1008,7 +1008,7 @@ port map(
 );
 
 -- addr bus to video addr decoder - IC60
-rom_decoder_cs <= '1' when dn_addr(17 downto 10) = "10001000" else '0';
+rom_decoder_cs <= '1' when dn_addr(17 downto 13) = "10001" else '0';
 video_addr_decoder : work.dpram generic map (8,9)
 port map(
 	clk_a  => clock_12,
@@ -1024,7 +1024,7 @@ port map(
 -- pia iO1 : ic6 (5C)
 pia_io1 : entity work.pia6821
 port map
-(	
+(
 	clk       	=> pias_clock,            -- rising edge
 	rst       	=> reset,                 -- active high
 	cs        	=> pia_io1_cs,
@@ -1053,7 +1053,7 @@ port map
 -- pia iO2 : ic5 (2C)
 pia_rom : entity work.pia6821
 port map
-(	
+(
 	clk       	=> pias_clock,
 	rst       	=> reset,
 	cs        	=> pia_io2_cs,
@@ -1092,26 +1092,26 @@ if rising_edge(clock_12) then
   if    hcnt = hcnt_base+0 then hsync0 <= '0';
   elsif hcnt = hcnt_base+6 then hsync0 <= '1';
   end if;
-  
+
   if hcnt = 63 and pixel_cnt = 5 then
 	 if vcnt = 502 then
 	   vsync_cnt := X"0";
     else
       if vsync_cnt < X"F" then vsync_cnt := vsync_cnt + '1'; end if;
     end if;
-  end if;	 
+  end if;
 
-  if    hcnt = 48 and pixel_cnt = 3 then hblank <= '1'; 
+  if    hcnt = 48 and pixel_cnt = 3 then hblank <= '1';
   elsif hcnt =  1 and pixel_cnt = 3 then hblank <= '0';
   end if;
 
   if    vcnt = 504 then vblank <= '1';
-  elsif vcnt = 262 then vblank <= '0'; 
+  elsif vcnt = 262 then vblank <= '0';
   end if;
 
   -- external sync and blank outputs
   video_hs <= hsync0;
-  
+
   if    vsync_cnt = 0 then video_vs <= '0';
   elsif vsync_cnt = 8 then video_vs <= '1';
   end if;
@@ -1124,16 +1124,16 @@ inferno_sound_board : entity work.inferno_sound_board
 port map(
 	clock_12   => clock_12,
 	reset      => reset,
- 
+
 	dn_addr      => dn_addr,
 	dn_data      => dn_data,
 	dn_wr        => dn_wr,
 
 	sound_select  => sound_select,
-	sound_trig    => sound_trig, 
+	sound_trig    => sound_trig,
 	sound_ack     => sound_ack,
 	audio_out     => audio_out,
- 
+
 	dbg_cpu_addr  => sound_cpu_addr
 );
 

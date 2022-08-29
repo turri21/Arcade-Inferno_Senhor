@@ -1,0 +1,40 @@
+#inferno_bank_b.bin inferno_bank_b.vhd
+   ic25.inf CRC(103a5951)  8192
+   ic23.inf CRC(c04749a0)  8192
+   ic21.inf CRC(c405f853)  8192
+   ic19.inf CRC(ade7645a)  8192
+
+#inferno_bank_c.bin inferno_bank_c.vhd
+   ic18.inf CRC(95bcf7b1)  8192
+   ic16.inf CRC(8bc4f935)  8192
+   ic14.inf CRC(a70508a7)  8192
+   ic12.inf CRC(7ffb87f9)  8192
+
+#inferno_bank_d.bin inferno_bank_d.vhd
+   ic17.inf CRC(b4684139)  8192
+   ic15.inf CRC(128a6ad6)  8192
+   ic13.inf CRC(83a9e4d6)  8192
+   ic11.inf CRC(c2e9c909)  8192
+
+#inferno_graph1.vhd
+   ic57.inf CRC(65a4ef79)  8192
+
+#inferno_graph2.vhd
+   ic58.inf CRC(4bb1c2a0)  8192
+
+#inferno_graph3.vhd
+   ic41.inf CRC(f3f7238f)  8192
+
+#inferno_sound.vhd
+   ic8.inf  CRC(4e3123b8)  8192
+
+#inferno_prog2.bin inferno_prog2.vhd
+   ic9.inf  CRC(1a013185)  4096
+   ic10.inf CRC(dbf64a36)  4096
+
+#inferno_decoder.vhd
+   prom3
+
+# unused
+#prom1
+#prom2

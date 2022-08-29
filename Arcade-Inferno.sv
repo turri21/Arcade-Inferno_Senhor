@@ -49,13 +49,14 @@ module emu
 	output        VGA_F1,
 	output [1:0]  VGA_SL,
 	output        VGA_SCALER, // Force VGA scaler
+	output        VGA_DISABLE, // analog out is off
 
 	input  [11:0] HDMI_WIDTH,
 	input  [11:0] HDMI_HEIGHT,
 	output        HDMI_FREEZE,
 
 `ifdef MISTER_FB
-	// Use framebuffer in DDRAM (USE_FB=1 in qsf)
+	// Use framebuffer in DDRAM
 	// FB_FORMAT:
 	//    [2:0] : 011=8bpp(palette) 100=16bpp 101=24bpp 110=32bpp
 	//    [3]   : 0=16bits 565 1=16bits 1555
@@ -177,11 +178,11 @@ assign USER_OUT = '1;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
 assign {SDRAM_DQ, SDRAM_A, SDRAM_BA, SDRAM_CLK, SDRAM_CKE, SDRAM_DQML, SDRAM_DQMH, SDRAM_nWE, SDRAM_nCAS, SDRAM_nRAS, SDRAM_nCS} = 'Z;
-assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;  
+assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;
 
-//assign VGA_SL = 0;
 assign VGA_F1 = 0;
 assign VGA_SCALER = 0;
+assign VGA_DISABLE = 0;
 assign HDMI_FREEZE = 0;
 
 assign AUDIO_MIX = 0;
@@ -196,42 +197,45 @@ assign LED_USER  = ioctl_download;
 
 wire [1:0] ar = status[9:8];
 
-assign VIDEO_ARX = (!ar) ? 12'd4 : (ar - 1'd1);
-assign VIDEO_ARY = (!ar) ? 12'd3 : 12'd0;
+assign VIDEO_ARX = (!ar) ? 12'd282 : (ar - 1'd1);
+assign VIDEO_ARY = (!ar) ? 12'd241 : 12'd0;
 
-`include "build_id.v" 
+`include "build_id.v"
 localparam CONF_STR = {
 	"A.INFERNO;;",
 	"-;",
-	"H0O89,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
-	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+	"H0O[9:8],Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+	"O[5:3],Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
-	"OA,Advance,Off,On;",
-	"OB,Auto Up,Off,On;",
-	"OC,High Score Reset,Off,On;",
+	"O[13],Aim+Fire,Off,On;",
+	"-;",
+	"O[10],Advance,Off,On;",
+	"O[11],Auto Up,Off,On;",
+	"O[12],High Score Reset,Off,On;",
 	"-;",
 	"R0,Reset;",
-	"J1,Trigger,Start 1P,Start 2P,Coin;",
-	"V,v",`BUILD_DATE 
+	"J1,Trigger,Start,Coin,Aim Up,Aim Down,Aim Left,Aim Right;",
+	"jn,R,Start,Select,X,B,Y,A;",
+	"V,v",`BUILD_DATE
 };
 
-wire        forced_scandoubler;
-wire        direct_video;
-wire [21:0] gamma_bus;
-wire        video_rotated;
+wire         forced_scandoubler;
+wire         direct_video;
+wire [ 21:0] gamma_bus;
 
-wire        ioctl_download;
-wire        ioctl_wr;
-wire [24:0] ioctl_addr;
-wire [ 7:0] ioctl_dout;
-wire [15:0] ioctl_index;
+wire         ioctl_download;
+wire         ioctl_wr;
+wire [ 24:0] ioctl_addr;
+wire [  7:0] ioctl_dout;
+wire [ 15:0] ioctl_index;
 
-wire [ 1:0] buttons;
-wire [31:0] status;
-wire [10:0] ps2_key;
+wire [  1:0] buttons;
+wire [127:0] status;
+wire [ 10:0] ps2_key;
 
-wire [15:0] joystick_0, joystick_1;
-wire [15:0] joy = joystick_0 | joystick_1;
+wire [ 31:0] joystick_0, joystick_1;
+wire [ 15:0] joystick_l_analog_0, joystick_l_analog_1;
+wire [ 15:0] joystick_r_analog_0, joystick_r_analog_1;
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
@@ -244,7 +248,6 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.status_menumask({direct_video}),
 
 	.forced_scandoubler(forced_scandoubler),
-	.video_rotated(video_rotated),
 	.gamma_bus(gamma_bus),
 	.direct_video(direct_video),
 
@@ -255,15 +258,19 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.ioctl_index(ioctl_index),
 
 	.joystick_0(joystick_0),
-	.joystick_1(joystick_1)
+	.joystick_1(joystick_1),
+	.joystick_l_analog_0(joystick_l_analog_0),
+	.joystick_l_analog_1(joystick_l_analog_1),
+	.joystick_r_analog_0(joystick_r_analog_0),
+	.joystick_r_analog_1(joystick_r_analog_1)
 );
 
 ///////////////////////   CLOCKS   ///////////////////////////////
 
 wire clk_sys;
 wire pll_locked;
-wire clk_48,clk_12;
-assign clk_sys=clk_12;
+wire clk_48, clk_12;
+assign clk_sys = clk_12;
 
 pll pll
 (
@@ -276,35 +283,123 @@ pll pll
 
 wire reset = RESET | status[0] | buttons[1];
 
+///////////////////////   INPUTS    ///////////////////////////////
+
+logic [3:0] joyal_1, joyal_2, joyar_1, joyar_2;
+logic [3:0] joy_run_1, joy_run_2, joy_aim_1, joy_aim_2;
+
+always_comb begin
+		joyal_1[3] = ($signed(joystick_l_analog_0[15:8]) < -20); // Up
+		joyal_1[2] = ($signed(joystick_l_analog_0[15:8]) >  20); // Down
+		joyal_1[1] = ($signed(joystick_l_analog_0[ 7:0]) < -20); // Left
+		joyal_1[0] = ($signed(joystick_l_analog_0[ 7:0]) >  20); // Right
+
+		joyar_1[3] = ($signed(joystick_r_analog_0[15:8]) < -20);
+		joyar_1[2] = ($signed(joystick_r_analog_0[15:8]) >  20);
+		joyar_1[1] = ($signed(joystick_r_analog_0[ 7:0]) < -20);
+		joyar_1[0] = ($signed(joystick_r_analog_0[ 7:0]) >  20);
+
+		joyal_2[3] = ($signed(joystick_l_analog_1[15:8]) < -20);
+		joyal_2[2] = ($signed(joystick_l_analog_1[15:8]) >  20);
+		joyal_2[1] = ($signed(joystick_l_analog_1[ 7:0]) < -20);
+		joyal_2[0] = ($signed(joystick_l_analog_1[ 7:0]) >  20);
+
+		joyar_2[3] = ($signed(joystick_r_analog_1[15:8]) < -20);
+		joyar_2[2] = ($signed(joystick_r_analog_1[15:8]) >  20);
+		joyar_2[1] = ($signed(joystick_r_analog_1[ 7:0]) < -20);
+		joyar_2[0] = ($signed(joystick_r_analog_1[ 7:0]) >  20);
+end
+
+always_ff @(posedge clk_12) begin
+	joy_run_1[3] <= ((joyal_1[3] && joyal_1[0]) | joystick_0[3] ); // Up-Right   / Up
+	joy_run_1[2] <= ((joyal_1[2] && joyal_1[1]) | joystick_0[2] ); // Down-Left  / Down
+	joy_run_1[1] <= ((joyal_1[3] && joyal_1[1]) | joystick_0[1] ); // Up-Left    / Left
+	joy_run_1[0] <= ((joyal_1[2] && joyal_1[0]) | joystick_0[0] ); // Down-Right / Right
+
+	joy_aim_1[3] <= ((joyar_1[3] && joyar_1[0]) | joystick_0[7] ); // X
+	joy_aim_1[2] <= ((joyar_1[2] && joyar_1[1]) | joystick_0[8] ); // B
+	joy_aim_1[1] <= ((joyar_1[3] && joyar_1[1]) | joystick_0[9] ); // Y
+	joy_aim_1[0] <= ((joyar_1[2] && joyar_1[0]) | joystick_0[10]); // A
+
+	joy_run_2[3] <= ((joyal_2[3] && joyal_2[0]) | joystick_1[3] );
+	joy_run_2[2] <= ((joyal_2[2] && joyal_2[1]) | joystick_1[2] );
+	joy_run_2[1] <= ((joyal_2[3] && joyal_2[1]) | joystick_1[1] );
+	joy_run_2[0] <= ((joyal_2[2] && joyal_2[0]) | joystick_1[0] );
+
+	joy_aim_2[3] <= ((joyar_2[3] && joyar_2[0]) | joystick_1[7] );
+	joy_aim_2[2] <= ((joyar_2[2] && joyar_2[1]) | joystick_1[8] );
+	joy_aim_2[1] <= ((joyar_2[3] && joyar_2[1]) | joystick_1[9] );
+	joy_aim_2[0] <= ((joyar_2[2] && joyar_2[0]) | joystick_1[10]);
+end
+
+// These may look out of order, they are correct though (2,0,1,3)
+logic [3:0] btn_run_1, btn_aim_1, btn_run_2, btn_aim_2;
+assign btn_run_1 = {joy_run_1[2], joy_run_1[0], joy_run_1[1], joy_run_1[3]};
+assign btn_run_2 = {joy_run_2[2], joy_run_2[0], joy_run_2[1], joy_run_2[3]};
+assign btn_aim_1 = {joy_aim_1[2], joy_aim_1[0], joy_aim_1[1], joy_aim_1[3]};
+assign btn_aim_2 = {joy_aim_2[2], joy_aim_2[0], joy_aim_2[1], joy_aim_2[3]};
+
+logic btn_aimfire_1, btn_aimfire_2;
+always_ff @(posedge clk_12) begin
+	btn_aimfire_1 <= 0;
+	btn_aimfire_2 <= 0;
+	if (btn_aim_1[3] | btn_aim_1[2] | btn_aim_1[1] | btn_aim_1[0]) btn_aimfire_1 <= 1;
+	if (btn_aim_2[3] | btn_aim_2[2] | btn_aim_2[1] | btn_aim_2[0]) btn_aimfire_1 <= 1;
+end
+
+logic aimfire, btn_trigger_1, btn_trigger_2, btn_start_1, btn_start_2, btn_coin;
+assign aimfire = status[13];
+assign btn_trigger_1 = aimfire ? btn_aimfire_1 : joystick_0[4];
+assign btn_trigger_2 = aimfire ? btn_aimfire_2 : joystick_1[4];
+assign btn_start_1   = joystick_0[5];
+assign btn_start_2   = joystick_1[5];
+assign btn_coin      = joystick_0[6] | joystick_1[6];
+
 ///////////////////////   DISPLAY   ///////////////////////////////
 
-wire hblank, vblank;
-wire hs, vs;
-wire [3:0] r,g,b,intensity;
-wire [3:0] red,green,blue;
-wire [7:0] ri,gi,bi;
+logic hblank, vblank;
+logic hs, vs;
+logic ce_pix;
 
-assign ri = r*intensity;
-assign gi = g*intensity;
-assign bi = b*intensity;
-
-assign red = ri[7:4];
-assign blue = bi[7:4];
-assign green = gi[7:4];
-
-reg ce_pix;
 always @(posedge clk_48) begin
-	reg [2:0] div;
+	logic [2:0] div;
 	div <= div + 1'd1;
 	ce_pix <= !div;
 end
 
-arcade_video #(256,12,1) arcade_video
+logic [3:0] r,g,b,intensity;
+logic [7:0] ri,gi,bi;
+logic [7:0] color_lut[256] = '{
+    8'd19, 8'd21, 8'd23,  8'd25,  8'd26,  8'd29,  8'd32,  8'd35,  8'd38,  8'd43,  8'd49,  8'd56,  8'd65,  8'd76,  8'd96,  8'd108,
+    8'd21, 8'd22, 8'd24,  8'd26,  8'd28,  8'd30,  8'd34,  8'd37,  8'd40,  8'd45,  8'd52,  8'd59,  8'd68,  8'd80,  8'd101, 8'd114,
+    8'd22, 8'd24, 8'd26,  8'd28,  8'd30,  8'd33,  8'd36,  8'd39,  8'd43,  8'd48,  8'd55,  8'd63,  8'd73,  8'd86,  8'd107, 8'd121,
+    8'd24, 8'd25, 8'd27,  8'd29,  8'd32,  8'd35,  8'd38,  8'd42,  8'd46,  8'd52,  8'd59,  8'd67,  8'd77,  8'd91,  8'd114, 8'd129,
+    8'd25, 8'd27, 8'd29,  8'd31,  8'd34,  8'd37,  8'd40,  8'd45,  8'd48,  8'd54,  8'd62,  8'd71,  8'd81,  8'd96,  8'd121, 8'd137,
+    8'd27, 8'd28, 8'd31,  8'd34,  8'd36,  8'd39,  8'd44,  8'd48,  8'd52,  8'd58,  8'd66,  8'd76,  8'd87,  8'd103, 8'd129, 8'd146,
+    8'd29, 8'd31, 8'd34,  8'd36,  8'd39,  8'd43,  8'd47,  8'd52,  8'd56,  8'd63,  8'd72,  8'd82,  8'd94,  8'd111, 8'd140, 8'd158,
+    8'd32, 8'd34, 8'd37,  8'd39,  8'd43,  8'd46,  8'd51,  8'd56,  8'd61,  8'd68,  8'd78,  8'd89,  8'd102, 8'd120, 8'd151, 8'd171,
+    8'd32, 8'd35, 8'd38,  8'd41,  8'd44,  8'd48,  8'd53,  8'd59,  8'd64,  8'd72,  8'd83,  8'd94,  8'd109, 8'd129, 8'd161, 8'd182,
+    8'd36, 8'd38, 8'd42,  8'd45,  8'd48,  8'd53,  8'd59,  8'd65,  8'd70,  8'd79,  8'd90,  8'd104, 8'd119, 8'd141, 8'd177, 8'd201,
+    8'd40, 8'd43, 8'd46,  8'd50,  8'd54,  8'd59,  8'd65,  8'd72,  8'd79,  8'd88,  8'd101, 8'd115, 8'd133, 8'd157, 8'd198, 8'd224,
+    8'd45, 8'd48, 8'd52,  8'd57,  8'd61,  8'd66,  8'd74,  8'd81,  8'd88,  8'd98,  8'd113, 8'd129, 8'd149, 8'd176, 8'd221, 8'd249,
+    8'd50, 8'd54, 8'd58,  8'd64,  8'd68,  8'd75,  8'd83,  8'd91,  8'd99,  8'd111, 8'd128, 8'd146, 8'd169, 8'd200, 8'd249, 8'd253,
+    8'd58, 8'd63, 8'd68,  8'd74,  8'd79,  8'd87,  8'd96,  8'd106, 8'd116, 8'd129, 8'd148, 8'd169, 8'd195, 8'd231, 8'd253, 8'd254,
+    8'd71, 8'd76, 8'd83,  8'd89,  8'd96,  8'd105, 8'd116, 8'd128, 8'd139, 8'd156, 8'd179, 8'd205, 8'd236, 8'd252, 8'd254, 8'd254,
+    8'd91, 8'd97, 8'd105, 8'd114, 8'd123, 8'd133, 8'd147, 8'd161, 8'd176, 8'd196, 8'd223, 8'd249, 8'd252, 8'd254, 8'd254, 8'd255
+};
+
+always_ff @(posedge clk_48) begin : colorPalette
+    ri = ~| intensity ? 8'd0 : color_lut[{r, intensity}];
+    gi = ~| intensity ? 8'd0 : color_lut[{g, intensity}];
+    bi = ~| intensity ? 8'd0 : color_lut[{b, intensity}];
+end : colorPalette
+
+arcade_video #(313,24,1) arcade_video
 (
 	.*,
 	.clk_video(clk_48),
 
-	.RGB_in({red,green,blue}),
+	.RGB_in({ri[7:0],gi[7:0],bi[7:0]}),
 	.HBlank(hblank),
 	.VBlank(vblank),
 	.HSync(~hs),
@@ -317,36 +412,38 @@ assign AUDIO_L = {audio, 6'd0};
 assign AUDIO_R = AUDIO_L;
 assign AUDIO_S = 0;
 
+///////////////////////    CORE    ///////////////////////////////
+
 williams2 williams2
 (
-	.clock_12(clk_12),
+	.clock_12(clk_sys),
 	.reset(reset),
 
-	.video_r(r),           	// [3:0]
-	.video_g(g),           	// [3:0]
-	.video_b(b),           	// [3:0]
-	.video_i(intensity),   	// [3:0] Color Intensity options
-	.video_hblank(hblank), 	// 48 <-> 1
-	.video_vblank(vblank), 	// 504 <-> 262
+	.video_r(r),
+	.video_g(g),
+	.video_b(b),
+	.video_i(intensity),
+	.video_hblank(hblank), // 48 <-> 1
+	.video_vblank(vblank), // 504 <-> 262
 	.video_hs(hs),
 	.video_vs(vs),
 
-	.audio_out(audio), 		// [7:0]
+	.audio_out(audio),
 
 	.btn_advance(status[10]),
 	.btn_auto_up(status[11]),
 	.btn_high_score_reset(status[12]),
 
- 	.btn_trigger_1	(joy[4]),
- 	.btn_trigger_2	(joy[4]),
- 	.btn_start_1    (joy[5]),
- 	.btn_start_2    (joy[6]),
- 	.btn_coin      	(joy[7]),
+	.btn_trigger_1(btn_trigger_1),
+	.btn_trigger_2(btn_trigger_2),
+	.btn_start_1(btn_start_1),
+	.btn_start_2(btn_start_2),
+	.btn_coin(btn_coin),
 
- 	.btn_run_1      (joy[3:0]),
- 	.btn_run_2      (joy[3:0]),
- 	.btn_aim_1      (joy[3:0]), // aim should use separate controls
- 	.btn_aim_2      (joy[3:0]),
+	.btn_run_1(btn_run_1),
+	.btn_run_2(btn_run_2),
+	.btn_aim_1(btn_aim_1),
+	.btn_aim_2(btn_aim_2),
 
 	.sw_coktail_table(),
 	.seven_seg(),

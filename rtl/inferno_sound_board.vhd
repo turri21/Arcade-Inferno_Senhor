@@ -4,13 +4,13 @@
 -- https://sourceforge.net/projects/darfpga/files
 -- github.com/darfpga
 ---------------------------------------------------------------------------------
--- gen_ram.vhd 
--------------------------------- 
+-- gen_ram.vhd
+--------------------------------
 -- Copyright 2005-2008 by Peter Wendrich (pwsoft@syntiac.com)
 -- http://www.syntiac.com/fpga64.html
 ---------------------------------------------------------------------------------
 -- cpu68 - Version 9th Jan 2004 0.8+
--- 6800/01 compatible CPU core 
+-- 6800/01 compatible CPU core
 -- GNU public license - December 2002 : John E. Kent
 -- + 2019 Jared Boone
 -- + March 2020 Gyorgy Szombathelyi
@@ -20,7 +20,7 @@
 -- Do not redistribute roms whatever the form
 -- Use at your own risk
 ---------------------------------------------------------------------------------
--- Version 0.0 -- 04/03/2022 -- 
+-- Version 0.0 -- 04/03/2022 --
 --		    initial version
 ---------------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ entity inferno_sound_board is
 port(
 	clock_12    : in std_logic;
 	reset       : in std_logic;
- 
+
 	-- MiSTer rom loading
 	dn_addr      : in  std_logic_vector(17 downto 0);
 	dn_data      : in  std_logic_vector( 7 downto 0);
@@ -43,7 +43,7 @@ port(
 	sound_trig   : in std_logic;
 	sound_ack    : out std_logic;
 	audio_out    : out std_logic_vector( 7 downto 0);
- 
+
 	dbg_cpu_addr : out std_logic_vector(15 downto 0)
 );
 end inferno_sound_board;
@@ -63,7 +63,7 @@ architecture struct of inferno_sound_board is
  signal wram_cs   : std_logic;
  signal wram_we   : std_logic;
  signal wram_do   : std_logic_vector( 7 downto 0);
- 
+
  signal rom_cs    : std_logic;
  signal rom_do    : std_logic_vector( 7 downto 0);
 
@@ -87,7 +87,7 @@ architecture struct of inferno_sound_board is
  signal pia_do     : std_logic_vector( 7 downto 0);
 
  signal rom_sound_cs  : std_logic;
- 
+
 begin
 
 dbg_cpu_addr <= cpu_addr;
@@ -96,23 +96,23 @@ dbg_cpu_addr <= cpu_addr;
 process (reset, clock_12)
 begin
 	if rising_edge(clock_12) then
-		if clock_div < 11 then 
+		if clock_div < 11 then
 			clock_div  <= clock_div + '1';
 		else
 			clock_div  <= (others => '0');
 		end if;
-		if clock_div > 6 then 
+		if clock_div > 6 then
 			cpu_clock <= '1';
-		else		
+		else
 			cpu_clock <= '0';
 		end if;
-		
-		if clock_div > 7 and clock_div < 9 then 
+
+		if clock_div > 7 and clock_div < 9 then
 			pia_clock <= '1';
-		else		
+		else
 			pia_clock <= '0';
 		end if;
-				
+
 	end if;
 end process;
 
@@ -120,10 +120,10 @@ end process;
 wram_cs <= '1' when cpu_addr(15 downto 13) = "000" else '0';
 pia_cs  <= '1' when cpu_addr(15 downto 13) = "001" else '0';
 rom_cs  <= '1' when cpu_addr(15 downto 13) = "111" else '0';
-	
+
 -- write enables
 wram_we <=    '1' when cpu_rw_n = '0' and cpu_clock = '1' and wram_cs = '1' else '0';
-pia_rw_n <=   '0' when cpu_rw_n = '0' and pia_cs = '1' else '1'; 
+pia_rw_n <=   '0' when cpu_rw_n = '0' and pia_cs = '1' else '1';
 
 -- mux cpu in data between roms/io/wram
 cpu_di <=
@@ -136,7 +136,7 @@ cpu_irq  <= pia_irqa or pia_irqb;
 
 -- microprocessor 6800
 main_cpu : entity work.cpu68
-port map(	
+port map(
 	clk      => cpu_clock,-- E clock input (falling edge)
 	rst      => reset,    -- reset input (active high)
 	rw       => cpu_rw_n, -- read not write output
@@ -153,7 +153,7 @@ port map(
 );
 
 -- cpu program rom
-rom_sound_cs <= '1' when dn_addr(17 downto 13) = "00001" else '0';
+rom_sound_cs <= '1' when dn_addr(17 downto 13) = "01111" else '0';
 cpu_prog_rom : work.dpram generic map (8,13)
 port map
 (
@@ -161,13 +161,13 @@ port map
 	we_a   => dn_wr and rom_sound_cs,
 	addr_a => dn_addr(12 downto 0),
 	d_a    => dn_data,
-	
+
 	clk_b  => clock_12,
 	addr_b => cpu_addr(12 downto 0),
 	q_b    => rom_do
 );
 
--- cpu wram 
+-- cpu wram
 cpu_ram : entity work.gen_ram
 generic map( dWidth => 8, aWidth => 8)
 port map(
@@ -178,10 +178,10 @@ port map(
  q    => wram_do
 );
 
--- pia 
+-- pia
 pia : entity work.pia6821
 port map
-(	
+(
 	clk       	=> pia_clock,
 	rst       	=> reset,
 	cs        	=> pia_cs,
