@@ -6,6 +6,11 @@ Original core developed by [@darfpga](https://github.com/darfpga) ([Source](http
 
 Ported to MiSTer FPGA by [@JasonA-dev](https://github.com/JasonA-dev) and [@birdybro](https://github.com/birdybro)
 
+## Status
+
+* Inferno gameplay works (graphics, inputs, etc...)
+* Sound doesn't fully work (looking into this)
+
 ## Description
 
 This is a simulation model of the **Inferno** Williams 2nd Generation arcade hardware. This is a very challenging game that was very creatively designed. Here's the description of the gameplay from the original manual (which is hilarious):
@@ -55,13 +60,9 @@ If you press "Advance" again, it will return to it's original state, but "Auto U
 
 High Score reset is another internal button, and it makes the game pause for a second until the high score resets.
 
-## Status
-
-* Inferno works (sound, graphics, inputs, etc...)
-* Input options are nearly complete.
-
 ## To-Do
 
+* Fix sound playback, samples are playing at incorrect times or not playing at all.
 * Pause not implemented.
 * HiScore saving not implemented yet.
 * MiSTer DIP system not implemented yet (DIPS are defined away as CPU behavior currently in the PIA due to them not being a standard DIP system)
