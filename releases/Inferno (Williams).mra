@@ -12,7 +12,7 @@
     <category>Maze</category>
 
     <setname>inferno</setname>
-    <parent>inferno</setname>
+
     <mameversion>0226</mameversion>
     <rbf>inferno</rbf>
     <about></about>
