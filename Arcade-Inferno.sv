@@ -310,21 +310,36 @@ always_comb begin
 		joyar_2[0] = ($signed(joystick_r_analog_1[ 7:0]) >  20);
 end
 
-always_ff @(posedge clk_12) begin
-	joy_run_1[3] <= ((joyal_1[3] && joyal_1[0]) | joystick_0[3] ); // Up-Right   / Up
-	joy_run_1[2] <= ((joyal_1[2] && joyal_1[1]) | joystick_0[2] ); // Down-Left  / Down
-	joy_run_1[1] <= ((joyal_1[3] && joyal_1[1]) | joystick_0[1] ); // Up-Left    / Left
-	joy_run_1[0] <= ((joyal_1[2] && joyal_1[0]) | joystick_0[0] ); // Down-Right / Right
+always_ff @(posedge clk_48) begin
+	if (joyal_1) begin
+		joy_run_1[3] <= (joyal_1[3] && joyal_1[0]); // Up-Right
+		joy_run_1[2] <= (joyal_1[2] && joyal_1[1]); // Down-Left
+		joy_run_1[1] <= (joyal_1[3] && joyal_1[1]); // Up-Left
+		joy_run_1[0] <= (joyal_1[2] && joyal_1[0]); // Down-Right
+	end else begin
+		joy_run_1[3] <= joystick_0[3];
+		joy_run_1[2] <= joystick_0[2];
+		joy_run_1[1] <= joystick_0[1];
+		joy_run_1[0] <= joystick_0[0];
+	end
+	if (joyal_2) begin
+		joy_run_2[3] <= (joyal_2[3] && joyal_2[0]);
+		joy_run_2[2] <= (joyal_2[2] && joyal_2[1]);
+		joy_run_2[1] <= (joyal_2[3] && joyal_2[1]);
+		joy_run_2[0] <= (joyal_2[2] && joyal_2[0]);
+	end else begin
+		joy_run_2[3] <= joystick_1[3];
+		joy_run_2[2] <= joystick_1[2];
+		joy_run_2[1] <= joystick_1[1];
+		joy_run_2[0] <= joystick_1[0];
+	end
+end
 
+always_comb begin
 	joy_aim_1[3] <= ((joyar_1[3] && joyar_1[0]) | joystick_0[7] ); // X
 	joy_aim_1[2] <= ((joyar_1[2] && joyar_1[1]) | joystick_0[8] ); // B
 	joy_aim_1[1] <= ((joyar_1[3] && joyar_1[1]) | joystick_0[9] ); // Y
 	joy_aim_1[0] <= ((joyar_1[2] && joyar_1[0]) | joystick_0[10]); // A
-
-	joy_run_2[3] <= ((joyal_2[3] && joyal_2[0]) | joystick_1[3] );
-	joy_run_2[2] <= ((joyal_2[2] && joyal_2[1]) | joystick_1[2] );
-	joy_run_2[1] <= ((joyal_2[3] && joyal_2[1]) | joystick_1[1] );
-	joy_run_2[0] <= ((joyal_2[2] && joyal_2[0]) | joystick_1[0] );
 
 	joy_aim_2[3] <= ((joyar_2[3] && joyar_2[0]) | joystick_1[7] );
 	joy_aim_2[2] <= ((joyar_2[2] && joyar_2[1]) | joystick_1[8] );
