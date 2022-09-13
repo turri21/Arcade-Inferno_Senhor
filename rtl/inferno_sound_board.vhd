@@ -128,7 +128,8 @@ pia_rw_n <=   '0' when cpu_rw_n = '0' and pia_cs = '1' else '1';
 -- mux cpu in data between roms/io/wram
 cpu_di <=
 	wram_do when wram_cs = '1' else
-	pia_do  when pia_cs = '1' else
+	-- pia_do when pia_cs = '1' else
+	sound_select when pia_cs = '1' else -- Temporary bypass as per https://github.com/MiSTer-devel/Arcade-Inferno_MiSTer/issues/1#issuecomment-1244508141
 	rom_do when rom_cs = '1' else X"55";
 
 -- pia irqs to cpu
