@@ -126,12 +126,12 @@ begin
 --
 --------------------------------
 
-pia_read : process(	addr,	cs,
+pia_read : process( addr, cs,
                     irqa1, irqa2, irqb1, irqb2,
                     porta_ddr,  portb_ddr,
-										porta_data, portb_data,
-										porta_ctrl, portb_ctrl,
-						   			pa_i,       pb_i )
+                    porta_data, portb_data,
+                    porta_ctrl, portb_ctrl,
+                    pa_i, pb_i, pa_ddr_ovrd )
 variable count : integer;
 begin
       case addr is
