@@ -359,7 +359,7 @@ always_ff @(posedge clk_12) begin
 	btn_aimfire_1 <= 0;
 	btn_aimfire_2 <= 0;
 	if (btn_aim_1[3] | btn_aim_1[2] | btn_aim_1[1] | btn_aim_1[0]) btn_aimfire_1 <= 1;
-	if (btn_aim_2[3] | btn_aim_2[2] | btn_aim_2[1] | btn_aim_2[0]) btn_aimfire_1 <= 1;
+	if (btn_aim_2[3] | btn_aim_2[2] | btn_aim_2[1] | btn_aim_2[0]) btn_aimfire_2 <= 1;
 end
 
 logic aimfire, btn_trigger_1, btn_trigger_2, btn_start_1, btn_start_2, btn_coin;
