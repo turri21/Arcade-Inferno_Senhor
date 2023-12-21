@@ -9,7 +9,6 @@ Ported to MiSTer FPGA by [@JasonA-dev](https://github.com/JasonA-dev) and [@bird
 ## Status
 
 * Inferno gameplay works (graphics, inputs, etc...)
-* Sound doesn't fully work (looking into this)
 
 ## Description
 
