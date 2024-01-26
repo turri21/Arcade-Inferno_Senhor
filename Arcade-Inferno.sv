@@ -206,8 +206,6 @@ localparam CONF_STR = {
 	"-;",
 	"H0O[9:8],Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"O[5:3],Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
-	"O[21:17],Analog Video H-Pos,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1;",
-	"O[26:22],Analog Video V-Pos,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,-15,-14,-13,-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1;",
 	"-;",
 	"O[13],Aim+Fire,Off,On;",
 	"-;",
@@ -375,7 +373,7 @@ assign btn_coin      = joystick_0[6] | joystick_1[6];
 ///////////////////////   DISPLAY   ///////////////////////////////
 
 logic hblank, vblank;
-logic hs, vs, hs_core, vs_core;
+logic hs, vs;
 logic ce_pix;
 
 always @(posedge clk_48) begin
@@ -411,23 +409,6 @@ always_ff @(posedge clk_48) begin : colorPalette
     bi = ~| intensity ? 8'd0 : color_lut[{b, intensity}];
 end : colorPalette
 
-// H/V offset
-wire [4:0]	hoffset = status[21:17];
-wire [4:0]	voffset = status[26:22];
-jtframe_resync #(5) jtframe_resync
-(
-	.clk(clk_48),
-	.pxl_cen(ce_pix),
-	.hs_in(~hs_core),
-	.vs_in(~vs_core),
-	.LVBL(~vblank),
-	.LHBL(~hblank),
-	.hoffset(~hoffset),
-	.voffset(~voffset),
-	.hs_out(hs),
-	.vs_out(vs)
-);
-
 arcade_video #(313,24,1) arcade_video
 (
 	.*,
@@ -436,8 +417,8 @@ arcade_video #(313,24,1) arcade_video
 	.RGB_in({ri[7:0],gi[7:0],bi[7:0]}),
 	.HBlank(hblank),
 	.VBlank(vblank),
-	.HSync(hs),
-	.VSync(vs),
+	.HSync(~hs),
+	.VSync(~vs),
 	.fx(status[5:3])
 );
 
@@ -459,8 +440,8 @@ williams2 williams2
 	.video_i(intensity),
 	.video_hblank(hblank), // 48 <-> 1
 	.video_vblank(vblank), // 504 <-> 262
-	.video_hs(hs_core),
-	.video_vs(vs_core),
+	.video_hs(hs),
+	.video_vs(vs),
 
 	.audio_out(audio),
 
