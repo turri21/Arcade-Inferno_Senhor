@@ -217,6 +217,8 @@ localparam CONF_STR = {
 	"P1O[25],Pause when OSD is open,On,Off;",
 	"P1O[26],Dim video after 10s,On,Off;",
 	"-;",
+	"O[27],Autosave Hiscores,Off,On;",
+	"-;",
 	"O[10],Advance,Off,On;",
 	"O[11],Auto Up,Off,On;",
 	"O[12],High Score Reset,Off,On;",
@@ -232,9 +234,12 @@ wire         direct_video;
 wire [ 21:0] gamma_bus;
 
 wire         ioctl_download;
+wire         ioctl_upload;
+wire         ioctl_upload_req;
 wire         ioctl_wr;
 wire [ 24:0] ioctl_addr;
 wire [  7:0] ioctl_dout;
+wire [  7:0] ioctl_din;
 wire [ 15:0] ioctl_index;
 
 wire [  1:0] buttons;
@@ -260,9 +265,12 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.direct_video(direct_video),
 
 	.ioctl_download(ioctl_download),
+	.ioctl_upload(ioctl_upload),
+	.ioctl_upload_req(ioctl_upload_req),
 	.ioctl_wr(ioctl_wr),
 	.ioctl_addr(ioctl_addr),
 	.ioctl_dout(ioctl_dout),
+	.ioctl_din(ioctl_din),
 	.ioctl_index(ioctl_index),
 
 	.joystick_0(joystick_0),
@@ -418,23 +426,56 @@ always_ff @(posedge clk_48) begin : colorPalette
     bi = ~| intensity ? 8'd0 : color_lut[{b, intensity}];
 end : colorPalette
 
-
 // Pause functionality
 wire [23:0] pause_rgb;
-wire pause_cpu;
+wire pause_cpu_pause;
+wire pause_cpu_nvram;
+wire pause_cpu = pause_cpu_pause | pause_cpu_nvram;
+
 pause #(8,8,8,12) pause
 (
 	.clk_sys(clk_12),
 	.reset(reset),
 	.user_button(btn_pause),
-	.pause_request(1'b0), // No high score module pause request yet
+	.pause_request(pause_cpu_nvram), // Pause request from nvram module
 	.options(~status[26:25]),
 	.OSD_STATUS(OSD_STATUS),
 	.r(ri),
 	.g(gi),
 	.b(bi),
-	.pause_cpu(pause_cpu),
+	.pause_cpu(pause_cpu_pause),
 	.rgb_out(pause_rgb)
+);
+
+// NVRAM (High Score) functionality  
+wire [9:0] nvram_address;
+wire [3:0] nvram_data_4bit;  // 4-bit data from CMOS RAM
+wire [7:0] nvram_data_out;   // 8-bit data for nvram module
+
+// Convert 4-bit CMOS data to 8-bit by padding with zeros
+assign nvram_data_out = {4'b0000, nvram_data_4bit};
+
+nvram #(10,3,4,2) nvram
+(
+	.clk(clk_12),
+	.paused(pause_cpu),
+	.reset(reset),
+	.autosave(status[27]),
+
+	.ioctl_upload(ioctl_upload),
+	.ioctl_upload_req(ioctl_upload_req),
+	.ioctl_download(ioctl_download),
+	.ioctl_wr(ioctl_wr),
+	.ioctl_addr(ioctl_addr),
+	.ioctl_index(ioctl_index),
+	.ioctl_din(ioctl_din),
+	.ioctl_dout(ioctl_dout),
+	.OSD_STATUS(OSD_STATUS),
+
+	.nvram_address(nvram_address),
+	.nvram_data_out(nvram_data_out),
+
+	.pause_cpu(pause_cpu_nvram)
 );
 
 arcade_video #(313,24,1) arcade_video
@@ -496,7 +537,12 @@ williams2 williams2
 
 	.dn_addr(ioctl_addr[17:0]),
 	.dn_data(ioctl_dout),
-	.dn_wr(ioctl_wr && ioctl_index==0)
+	.dn_wr(ioctl_wr && (ioctl_index==0 || ioctl_index==4)),
+	.dn_index(ioctl_index),
+
+	// NVRAM interface
+	.nvram_addr(nvram_address),
+	.nvram_data_out(nvram_data_4bit)
 );
 
 endmodule
