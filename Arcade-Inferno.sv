@@ -213,13 +213,17 @@ localparam CONF_STR = {
 	"-;",
 	"O[13],Aim+Fire,Off,On;",
 	"-;",
+	"P1,Pause options;",
+	"P1O[25],Pause when OSD is open,On,Off;",
+	"P1O[26],Dim video after 10s,On,Off;",
+	"-;",
 	"O[10],Advance,Off,On;",
 	"O[11],Auto Up,Off,On;",
 	"O[12],High Score Reset,Off,On;",
 	"-;",
 	"R0,Reset;",
-	"J1,Trigger,Start,Coin,Aim Up,Aim Down,Aim Left,Aim Right;",
-	"jn,R,Start,Select,X,B,Y,A;",
+	"J1,Trigger,Start,Coin,Aim Up,Aim Down,Aim Left,Aim Right,Pause;",
+	"jn,R,Start,Select,X,B,Y,A,L;",
 	"V,v",`BUILD_DATE
 };
 
@@ -366,13 +370,14 @@ always_ff @(posedge clk_12) begin
 	if (btn_aim_2[3] | btn_aim_2[2] | btn_aim_2[1] | btn_aim_2[0]) btn_aimfire_2 <= 1;
 end
 
-logic aimfire, btn_trigger_1, btn_trigger_2, btn_start_1, btn_start_2, btn_coin;
+logic aimfire, btn_trigger_1, btn_trigger_2, btn_start_1, btn_start_2, btn_coin, btn_pause;
 assign aimfire = status[13];
 assign btn_trigger_1 = aimfire ? btn_aimfire_1 : joystick_0[4];
 assign btn_trigger_2 = aimfire ? btn_aimfire_2 : joystick_1[4];
 assign btn_start_1   = joystick_0[5];
 assign btn_start_2   = joystick_1[5];
-assign btn_coin      = joystick_0[6] | joystick_1[6];
+assign btn_coin      = joystick_0[6]  | joystick_1[6];
+assign btn_pause     = joystick_0[11] | joystick_1[11];
 
 ///////////////////////   DISPLAY   ///////////////////////////////
 
@@ -413,12 +418,31 @@ always_ff @(posedge clk_48) begin : colorPalette
     bi = ~| intensity ? 8'd0 : color_lut[{b, intensity}];
 end : colorPalette
 
+
+// Pause functionality
+wire [23:0] pause_rgb;
+wire pause_cpu;
+pause #(8,8,8,12) pause
+(
+	.clk_sys(clk_12),
+	.reset(reset),
+	.user_button(btn_pause),
+	.pause_request(1'b0), // No high score module pause request yet
+	.options(~status[26:25]),
+	.OSD_STATUS(OSD_STATUS),
+	.r(ri),
+	.g(gi),
+	.b(bi),
+	.pause_cpu(pause_cpu),
+	.rgb_out(pause_rgb)
+);
+
 arcade_video #(313,24,1) arcade_video
 (
 	.*,
 	.clk_video(clk_48),
 
-	.RGB_in({ri[7:0],gi[7:0],bi[7:0]}),
+	.RGB_in(pause_rgb),
 	.HBlank(hblank),
 	.VBlank(vblank),
 	.HSync(~hs),
@@ -437,6 +461,7 @@ williams2 williams2
 (
 	.clock_12(clk_sys),
 	.reset(reset),
+	.pause_cpu(pause_cpu),
 
 	.video_r(r),
 	.video_g(g),
