@@ -1,3 +1,8 @@
+-=(Inferno_Senhor notes)=-
+
+Tested: Working Video 720p, 1080p & Sound.
+
+___
 # [Inferno](https://www.arcade-museum.com/game_detail.php?game_id=8191) for [MiSTer FPGA](https://mister-devel.github.io/MkDocs_MiSTer/)
 
 ![Inferno Logo](doc/title.png)
@@ -83,3 +88,4 @@ Quick reference for folders and file placement:
 /_Arcade/mame/<mame rom>.zip
 /_Arcade/hbmame/<hbmame rom>.zip
 ```
+
